@@ -9,13 +9,12 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # since this file in settings dir
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -23,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = 'django-insecure-(tz282!@3q_jj&74(y)o(0_@%mi$rey!6190yy_+@-b$bxc@rs'
 # above secret key will not be used
-SECRET_KEY = 'SECRET'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 # Application definition

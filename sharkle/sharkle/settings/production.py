@@ -7,11 +7,11 @@ ALLOWED_HOSTS = ['127.0.0.1', ]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': 'RDS',
+        'HOST': os.environ.get(('DB_HOST')),
         'PORT': 3306,
         'NAME': 'sharkle',
-        'USER': 'sharkle-server',
-        'PASSWORD': 'DB_PASSWORD',
+        'USER': os.environ.get(('DB_USER')),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'OPTIONS': { # for emoji
             'charset': 'utf8mb4',
             'use_unicode': True,

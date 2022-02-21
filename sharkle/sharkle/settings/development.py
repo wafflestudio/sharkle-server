@@ -16,8 +16,8 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': 3306,
         'NAME': 'sharkle',
-        'USER': 'sharkle-server',
-        'PASSWORD': 'sharkleDB^_^',
+        'USER': os.environ.get(('DB_USER')),
+        'PASSWORD': os.environ.get(('DB_PASSWORD')),
         'OPTIONS': { # for emoji
             'charset': 'utf8mb4',
             'use_unicode': True,

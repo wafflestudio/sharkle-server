@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('dj_rest_auth.urls')),
     path('accounts/', include('dj_rest_auth.registration.urls')),
+    path('', include('circle.urls'))
     #path('accounts/', include('allauth.urls')),
 ]
 

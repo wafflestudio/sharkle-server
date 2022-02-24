@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'comment',
 
     'recruitment',
+    'hashtag',
 
     #user - me dunno much
     'rest_framework',

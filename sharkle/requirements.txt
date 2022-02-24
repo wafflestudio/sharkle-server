@@ -6,3 +6,4 @@ sqlparse==0.4.1
 django-debug-toolbar==2.2
 djangorestframework==3.11.1
 python-dotenv
+djangorestframework-simplejwt==5.0.0

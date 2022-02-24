@@ -22,7 +22,7 @@ pip install -r requirements.txt
 
 echo "[Deploy] : Migrate"
 python manage.py makemigrations
-python manage.py migrate
+python manage.py migrate --settings=sharkle.settings.production
 
 cd /home/ec2-user/
 

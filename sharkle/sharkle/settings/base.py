@@ -35,11 +35,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'rest_framework',
 
-    # TODO jwt
-
+    #my app
     'user',
+    'circle',
+
+    'board',
+    'article',
+    'comment',
+
+    'recruitment',
+
+    #user - me dunno much
+    'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'dj_rest_auth',
     'dj_rest_auth.registration',

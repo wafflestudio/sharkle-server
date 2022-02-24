@@ -16,13 +16,13 @@ cd $WORKING_DIR
 echo "[Deploy] : Copy Secretes to root directory"
 cp /home/ec2-user/.env/.env $WORKING_DIR
 
-echo "[Deploy] : Migrate"
-python manage.py makemigrations
-python manage.py migrate
-
 echo "[Deploy] : Install Requirements"
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+
+echo "[Deploy] : Migrate"
+python manage.py makemigrations
+python manage.py migrate
 
 cd /home/ec2-user/
 

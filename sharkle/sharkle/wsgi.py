@@ -10,7 +10,8 @@ https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/
 import os
 
 from django.core.wsgi import get_wsgi_application
+from dotenv import load_dotenv
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sharkle.settings.development') #default dev setting
-
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sharkle.settings.production') #default dev setting
+load_dotenv(os.path.join("/home/ec2-user/build/sharkle", '.env'))
 application = get_wsgi_application()

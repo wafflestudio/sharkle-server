@@ -10,4 +10,4 @@ class PingPongView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
-        return Response(data={'ping': 'pong'}, status=status.HTTP_200_OK)
+        return Response(data={"ping": "pong"}, status=status.HTTP_200_OK)

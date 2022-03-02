@@ -21,7 +21,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 echo "[Deploy] : Migrate"
-python manage.py makemigrations
+python manage.py makemigrations --settings=sharkle.settings.production
 python manage.py migrate --settings=sharkle.settings.production
 
 cd /home/ec2-user/

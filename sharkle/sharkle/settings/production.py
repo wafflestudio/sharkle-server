@@ -2,7 +2,7 @@ from sharkle.settings.base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "54.180.162.219", "sharkle-server.kro.kr"]
+ALLOWED_HOSTS = ["127.0.0.1", "sharkle-server.kro.kr"]
 
 DATABASES = {
     "default": {

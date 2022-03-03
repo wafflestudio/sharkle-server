@@ -3,20 +3,19 @@ from django.db import models
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):
-
     use_in_migrations = True
 
-    def _create_user(self, user_id, password, **extra_fields):
-        user = self.model(user_id=user_id, **extra_fields)
+    def _create_user(self, password, **extra_fields):
+        user = self.model(**extra_fields)
         user.set_password(password)
         user.save(using=self._db)
 
         return user
 
-    def create_user(self, user_id, password=None, **extra_fields):
+    def create_user(self, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        return self._create_user(user_id, password, **extra_fields)
+        return self._create_user(password, **extra_fields)
 
     def create_superuser(self, password, **extra_fields):
 
@@ -34,9 +33,15 @@ class CustomUserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
 
-    EMAIL_FIELD = "email"
-    USERNAME_FIELD = "email"  # TODO ?
+    objects = CustomUserManager()
 
-    user_id = models.CharField(max_length=50, unique=True)
-    username = models.CharField(max_length=50)
+    EMAIL_FIELD = "email"
+    USERNAME_FIELD = "email"
+
+    user_id = models.CharField(max_length=20, unique=True)
+    username = models.CharField(max_length=15)
     email = models.EmailField(max_length=30, unique=True)
+
+    is_superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)

@@ -5,8 +5,45 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from .models import Circle, Homepage
 from hashtag.models import Hashtag, HashtagCircle
 
+class HomepageSerializer(serializers.ModelSerializer):
+
+    id = serializers.IntegerField(required=False)
+    homepage = serializers.CharField(max_length=500, allow_null=True, allow_blank=False, required=False)
+    facebook = serializers.CharField(max_length=500, allow_null=True, allow_blank=False, required=False)
+    instagram = serializers.CharField(max_length=500, allow_null=True, allow_blank=False, required=False)
+    twitter = serializers.CharField(max_length=500, allow_null=True, allow_blank=False, required=False)
+    youtube = serializers.CharField(max_length=500, allow_null=True, allow_blank=False, required=False)
+    tiktok = serializers.CharField(max_length=500, allow_null=True, allow_blank=False, required=False)
+    band = serializers.CharField(max_length=500, allow_null=True, allow_blank=False, required=False)
+
+    class Meta:
+        model = Homepage
+        fields = ['id', 'homepage', 'facebook', 'instagram', 'twitter', 'youtube', 'tiktok', 'band']
+        #extra_fields = ['problems']
+
+class CircleViewSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices)
+    type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices)
+    name = serializers.CharField()
+    bio = serializers.CharField()
+
+    homepage = serializers.SerializerMethodField()
+
+    introduction = serializers.CharField()
+    tag = serializers.CharField()
+
+    class Meta:
+        model = Circle
+        fields = ['id', 'type0', 'type1', 'name', 'bio', 'introduction', 'tag', 'homepage']
+        #extra_fields = ['problems']
+
+    def get_homepage(self, obj):
+        return HomepageSerializer(obj.homepage).data
+
 class CircleSerializer(serializers.ModelSerializer):
-    type = serializers.IntegerField()
+    type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices)
+    type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices)
     name = serializers.CharField(max_length=100, allow_null=False, allow_blank=False)
     bio = serializers.CharField(max_length=300, allow_null=False, allow_blank=True, required=False)
 
@@ -23,18 +60,20 @@ class CircleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Circle
-        fields = ['type', 'name', 'bio', 'introduction', 'tag'] \
-                 + ['homepage', 'facebook', 'instagram', 'twitter', 'youtube', 'tiktok', 'band']
+        fields = ['type0', 'type1', 'name', 'bio', 'introduction', 'tag'] + HomepageSerializer.Meta.fields
         #extra_fields = ['problems']
+
 
     def create(self, validated_data):
 
-        homepage_data = {}
-        for i in ['homepage', 'facebook', 'instagram', 'twitter', 'youtube', 'tiktok', 'band']:
-            if i in validated_data:
-                homepage_data[i] = validated_data.pop(i)
+        serializer = HomepageSerializer(data=validated_data)
+        serializer.is_valid(raise_exception=True)
+        homepage = serializer.save()
 
-        validated_data['homepage'] = Homepage.objects.create(**homepage_data)
+        for i in HomepageSerializer.Meta.fields:
+            validated_data.pop(i)
+
+        validated_data['homepage'] = homepage
 
         circle = Circle.objects.create(**validated_data)
 
@@ -46,3 +85,38 @@ class CircleSerializer(serializers.ModelSerializer):
                 hashtag_circle = HashtagCircle.objects.create(hashtag=hashtag, circle=circle)
 
         return circle
+
+    def update(self, instance, validated_data):
+        print(instance, validated_data)
+
+        data = {}
+        for i in HomepageSerializer.Meta.fields:
+            if i in validated_data:
+                data[i] = validated_data.pop(i)
+
+        print(data, instance)
+
+        serializer = HomepageSerializer(instance.homepage, data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.update(instance.homepage, serializer.validated_data)
+
+        #tag update
+        if 'tag' in validated_data:
+            instance.tag = validated_data.pop('tag')
+            tags = list(set(instance.tag.split(' ')))
+
+            hashtags = [Hashtag.objects.get_or_create(name=tag)[0] for tag in tags]
+
+            HashtagCircle.objects.filter(circle=instance).exclude(hashtag__in=hashtags).delete()
+
+            for hashtag in hashtags:
+                hashtag_circle = HashtagCircle.objects.get_or_create(circle=instance, hashtag=hashtag)
+
+        return super().update(instance, validated_data)
+
+
+
+
+
+
+

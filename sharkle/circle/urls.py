@@ -6,7 +6,8 @@ from .views import *
 app_name = 'circle'
 
 router = SimpleRouter()
-router.register('circle', CircleViewSet, basename='circle')  # /circle/
+router.register('homepage', HomepageViewSet, basename='homepage')  # /circle/
+router.register('circle', CircleViewSet, basename='circle')
 
 
 urlpatterns = [

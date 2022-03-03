@@ -14,25 +14,29 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_user(self, user_id, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
         return self._create_user(user_id, password, **extra_fields)
-
 
     def create_superuser(self, password, **extra_fields):
 
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
-        if extra_fields.get('is_staff') is not True or extra_fields.get('is_superuser') is not True:
-            raise ValueError('권한 설정이 잘못되었습니다.')
+        if (
+            extra_fields.get("is_staff") is not True
+            or extra_fields.get("is_superuser") is not True
+        ):
+            raise ValueError("권한 설정이 잘못되었습니다.")
 
         return self._create_user(password, **extra_fields)
 
+
 class User(AbstractBaseUser):
 
-    EMAIL_FIELD = 'email'
-    USERNAME_FIELD = 'username'  # TODO ?
+    EMAIL_FIELD = "email"
+    USERNAME_FIELD = "email"  # TODO ?
 
+    user_id = models.CharField(max_length=50, unique=True)
     username = models.CharField(max_length=50)
-    email = models.EmailField(max_length=30, unique=True)  # TODO unique ?
+    email = models.EmailField(max_length=30, unique=True)

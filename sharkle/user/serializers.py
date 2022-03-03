@@ -12,10 +12,15 @@ class UserSignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
 
-    def validate_email(self, data):
-        email = data.get("email")
+    def validate_email(self, email):
         if User.objects.filter(email=email).exists():
             raise serializers.ValidationError("이미 가입된 이메일입니다.")
+        return email
+
+    def validate_user_id(self, user_id):
+        if User.objects.filter(user_id=user_id).exists():
+            raise serializers.ValidationError("이미 가입된 아이디입니다.")
+        return user_id
 
     def create(self, validated_data):
         username = validated_data.get("username")

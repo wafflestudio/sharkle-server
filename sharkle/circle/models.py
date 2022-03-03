@@ -48,8 +48,9 @@ class Circle(BaseModel):
 class UserCircle_Member(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='membership', null=True)
     circle = models.ForeignKey(Circle, on_delete=models.CASCADE, related_name='membership', null=True)
-    is_manager = models.BooleanField()
+    is_manager = models.BooleanField(default=False)
 
 class UserCircle_Alarm(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscribe', null=True)
     circle = models.ForeignKey(Circle, on_delete=models.CASCADE, related_name='subscribe', null=True)
+

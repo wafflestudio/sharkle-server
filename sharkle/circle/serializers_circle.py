@@ -1,6 +1,4 @@
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import serializers, status
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework import serializers
 
 from .models import Circle, Homepage
 from hashtag.models import Hashtag, HashtagCircle

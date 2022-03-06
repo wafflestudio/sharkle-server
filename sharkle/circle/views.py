@@ -67,15 +67,16 @@ class CircleViewSet(viewsets.GenericViewSet):
 
         #tag 검색
         if 'tag' in request.query_params:
+
             try:
                 tag = int(request.query_params.get('tag'))
             except ValueError:
                 return Response(status=status.HTTP_400_BAD_REQUEST, data="tag is not an integer")
 
             q = Q()
-            for i in HashtagCircle.objects.filter(id=tag):
+            for i in HashtagCircle.objects.filter(hashtag__id=tag):
                 print(i.circle)
-                q &= Q(id=i.circle.id)
+                q |= Q(id=i.circle.id)
 
             if q:
                 queryset = queryset.filter(q)

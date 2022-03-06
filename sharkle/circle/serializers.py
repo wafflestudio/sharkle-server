@@ -86,9 +86,9 @@ class CircleSerializer(serializers.ModelSerializer):
         return circle
 
 class CircleUpdateSerializer(serializers.ModelSerializer):
-    type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices)
-    type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices)
-    name = serializers.CharField(max_length=100, allow_null=False, allow_blank=False)
+    type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices, required=False)
+    type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices, required=False)
+    name = serializers.CharField(max_length=100, allow_null=False, allow_blank=False, required=False)
     bio = serializers.CharField(max_length=300, allow_null=False, allow_blank=True, required=False)
 
     homepage = serializers.CharField(max_length=500, allow_null=True, allow_blank=False, required=False)

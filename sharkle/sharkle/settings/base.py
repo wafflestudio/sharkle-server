@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "user",
     'hashtag',
-    'circle'
+    'circle',
+    'recruitment'
 ]
 
 MIDDLEWARE = [

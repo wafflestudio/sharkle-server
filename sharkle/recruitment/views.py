@@ -87,6 +87,38 @@ class RecruitScheduleViewSet(viewsets.GenericViewSet):
     serializer_class = RecruitScheduleSerializer
     permission_classes = (permissions.AllowAny,)  # 테스트용 임시
 
+    def retrieve(self, request, circle_id, recruitment_id, pk):
+
+        if not (schedule := RecruitmentSchedule.objects.get_or_none(id=pk, recruitment_id=recruitment_id, recruitment__circle_id=circle_id)):
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "wrong_id", "detail": "Schedule이 존재하지 않습니다."})
+
+        return Response(status=status.HTTP_201_CREATED, data=RecruitScheduleViewSerializer(schedule).data)
+
+    def destroy(self, request, circle_id, recruitment_id, pk):
+        if not (schedule := RecruitmentSchedule.objects.get_or_none(id=pk, recruitment_id=recruitment_id,
+                                                                    recruitment__circle_id=circle_id)):
+            return Response(status=status.HTTP_404_NOT_FOUND,
+                            data={"error": "wrong_id", "detail": "Schedule이 존재하지 않습니다."})
+
+        schedule.delete()
+
+        return Response(status=status.HTTP_200_OK, data={"detail": "deleted successfully"})
+
+    def list(self, request, circle_id, recruitment_id):
+
+        queryset = self.get_queryset()
+        queryset = queryset.filter(recruitment__circle_id=circle_id, recruitment_id=recruitment_id)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = RecruitScheduleViewSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data="pagination fault")
+
+    def get_queryset(self):
+        return RecruitmentSchedule.objects.all()
+
     def create(self, request, circle_id, recruitment_id):
 
         data = request.data.copy()

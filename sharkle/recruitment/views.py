@@ -82,3 +82,18 @@ class RecruitmentViewSet(viewsets.GenericViewSet):
         recruitment.delete()
 
         return Response(status=status.HTTP_200_OK, data={"detail": "deleted successfully"})
+
+class RecruitScheduleViewSet(viewsets.GenericViewSet):
+    serializer_class = RecruitScheduleSerializer
+    permission_classes = (permissions.AllowAny,)  # 테스트용 임시
+
+    def create(self, request, circle_id, recruitment_id):
+
+        data = request.data.copy()
+        data['recruitment'] = recruitment_id
+
+        serializer = self.get_serializer(data=data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        recruitment_schedule = serializer.save()
+
+        return Response(status=status.HTTP_201_CREATED, data=RecruitScheduleViewSerializer(recruitment_schedule).data)

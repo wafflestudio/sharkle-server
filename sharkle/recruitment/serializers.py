@@ -13,7 +13,6 @@ class RecruitmentViewSerializer(serializers.ModelSerializer):
     def get_circle_id(self, instance):
         return instance.circle.id
 
-
 class RecruitmentUpdateSerializer(serializers.ModelSerializer):
     introduction = serializers.CharField(required=False, max_length=5000, allow_null=False, allow_blank=True)
 
@@ -52,9 +51,42 @@ class RecruitmentSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        print(validated_data)
-
         validated_data['circle'] = Circle.objects.get_or_none(id=validated_data['circle'])
 
         return super().create(validated_data)
 
+class RecruitScheduleViewSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    recruitment_id = serializers.SerializerMethodField()
+    circle_id = serializers.SerializerMethodField()
+    name = serializers.CharField()
+    start = serializers.DateTimeField()
+    end = serializers.DateTimeField()
+    location = serializers.CharField()
+
+    class Meta:
+        model = RecruitmentSchedule
+        fields = ['id', 'circle_id', 'recruitment_id', 'name', 'start', 'end', 'location']
+
+    def get_recruitment_id(self, instance):
+        return instance.recruitment.id
+
+    def get_circle_id(self, instance):
+        return instance.recruitment.circle.id
+
+class RecruitScheduleSerializer(serializers.ModelSerializer):
+    recruitment = serializers.IntegerField()
+    name = serializers.CharField(max_length=100, allow_null=False, allow_blank=True)
+    start = serializers.DateTimeField()
+    end = serializers.DateTimeField()
+    location = serializers.CharField(max_length=100, allow_null=False, allow_blank=True)
+
+    class Meta:
+        model = RecruitmentSchedule
+        fields = ['recruitment', 'name', 'start', 'end', 'location']
+
+    def create(self, validated_data):
+
+        validated_data['recruitment'] = Recruitment.objects.get_or_none(id=validated_data['recruitment'])
+
+        return super().create(validated_data)

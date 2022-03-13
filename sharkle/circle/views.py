@@ -26,7 +26,7 @@ class CircleViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         circle = serializer.save()
-        print(circle)
+        #print(circle)
 
         return Response(status=status.HTTP_200_OK, data=CircleViewSerializer(circle).data)
 
@@ -75,7 +75,7 @@ class CircleViewSet(viewsets.GenericViewSet):
 
             q = Q()
             for i in HashtagCircle.objects.filter(hashtag__id=tag):
-                print(i.circle)
+                #print(i.circle)
                 q |= Q(id=i.circle.id)
 
             if q:

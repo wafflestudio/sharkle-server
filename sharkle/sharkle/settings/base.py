@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "user",
-    "article.apps.ArticleConfig",
     "board",
     "hashtag",
     "circle",

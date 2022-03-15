@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class Board(models.Model):
     circle = models.SmallIntegerField(null=False)  # models.ForeignKey(Circle)

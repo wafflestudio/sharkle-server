@@ -30,7 +30,7 @@ class BoardViewSet(viewsets.GenericViewSet):
 
         if (err := self.circle_validate(user.id, circle_id, "생성")) is not None:
             return err
-
+        data["circle"] = circle_id
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -38,13 +38,20 @@ class BoardViewSet(viewsets.GenericViewSet):
 
     def list(self, request, **kwargs):
         circle_id = self.kwargs["circle_id"]
+        user = request.user
         if not Circle.objects.filter(id=circle_id).exists():
             return Response(
                 "id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
                 status=status.HTTP_404_NOT_FOUND,
             )
-        boards = self.get_queryset().filter(circle=circle_id, is_private=False)
-        return Response(self.get_serializer(boards, many=True).data)
+
+        member = UserCirclePermission(user.id, circle_id)
+        if not member.is_member():  # 멤버가 아니면 비공게 게시판 숨기기
+            boards = self.get_queryset().filter(circle=circle_id, is_private=False)
+            return Response(self.get_serializer(boards, many=True).data)
+        else:  # 멤버면 보든 게시판 공개
+            boards = self.get_queryset().filter(circle=circle_id)
+            return Response(self.get_serializer(boards, many=True).data)
 
     def retrieve(self, request, pk=None, **kwargs):
         circle_id = self.kwargs["circle_id"]
@@ -123,14 +130,12 @@ class BoardViewSet(viewsets.GenericViewSet):
             )
 
         board = self.get_queryset().filter(id=pk).first()
-        if board.circle != int(circle_id):
+        if board.circle.id != int(circle_id):
             return Response(
                 "게시판이 해당 동아리에 존재하지 않습니다.", status=status.HTTP_400_BAD_REQUEST
             )
         board.delete()
-        return Response(
-            "id :" + str(board.id) + " 게시판이 제거 되었습니다.", status=status.HTTP_200_OK
-        )
+        return Response("id :" + str(pk) + " 게시판이 제거 되었습니다.", status=status.HTTP_200_OK)
 
     def circle_validate(self, user_id, circle_id, method):
         user_circle_permission = UserCirclePermission(user_id, circle_id)

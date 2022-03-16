@@ -43,7 +43,7 @@ class BoardViewSet(viewsets.GenericViewSet):
                 "id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
                 status=status.HTTP_404_NOT_FOUND,
             )
-        boards = self.get_queryset().filter(circle=circle_id)
+        boards = self.get_queryset().filter(circle=circle_id, is_private=False)
         return Response(self.get_serializer(boards, many=True).data)
 
     def retrieve(self, request, pk=None, **kwargs):
@@ -65,6 +65,13 @@ class BoardViewSet(viewsets.GenericViewSet):
             return Response(
                 "게시판이 해당 동아리에 존재하지 않습니다.", status=status.HTTP_400_BAD_REQUEST
             )
+        if board.is_private:
+            user = request.user
+            member = UserCirclePermission(user.id, circle_id)
+            if not member.is_member():
+                return Response(
+                    "해당 게시판은 동아리원에게만 공개된 비밀 게시판입니다.", status=status.HTTP_400_BAD_REQUEST
+                )
 
         serializer = self.get_serializer(board)
         return Response(status=status.HTTP_200_OK, data=serializer.data)

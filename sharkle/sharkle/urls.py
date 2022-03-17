@@ -18,15 +18,16 @@ from django.urls import path, include
 from django.conf import settings
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/v1/', include('user.urls')),
-    path('api/v1/', include('circle.urls')),
-    path('api/v1/', include('hashtag.urls'))
+    path("admin/", admin.site.urls),
+    path("api/v1/", include("user.urls")),
+    path("api/v1/", include("circle.urls")),
+    path("api/v1/", include("hashtag.urls")),
+    path("api/v1/", include("board.urls")),
 ]
 
 if settings.DEBUG:
     import debug_toolbar
 
     urlpatterns += [
-        path('__debug__', include(debug_toolbar.urls)),
+        path("__debug__", include(debug_toolbar.urls)),
     ]

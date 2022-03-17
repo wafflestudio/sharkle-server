@@ -52,7 +52,7 @@ class User(AbstractBaseUser):
 
 class VerificationCode(models.Model):
     last_update = models.DateTimeField(auto_now=True)
-    email = models.EmailField(max_length=100, unique=True)
+    email = models.EmailField(max_length=100, unique=True, primary_key=True)
     code = models.PositiveIntegerField()
 
     def save(self, *args, **kwargs):

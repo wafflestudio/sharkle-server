@@ -1,9 +1,12 @@
 import json
 import logging
+
+from rest_framework.decorators import action
+
 from user.models import VerificationCode
 import boto3
 from botocore.exceptions import ClientError, WaiterError
-from rest_framework import permissions, status
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -86,3 +89,45 @@ class EmailSendView(APIView):
             )
 
         return Response({"message": "email sent to user"}, status=status.HTTP_200_OK)
+
+
+class EmailViewSet(viewsets.GenericViewSet):
+    permission_classes = (permissions.AllowAny,)
+
+    # POST /email/send/
+    @action(detail=False, methods=["post"])
+    def send(self, request):
+        # TODO Validation
+        destination_email = request.data.get("email")
+        verification_code = VerificationCode(email=destination_email)
+        verification_code.save(update_fields=["code"])
+        code = verification_code.code
+
+        ses_client = boto3.client("ses")
+        ses_mail_sender = SesMailSender(ses_client)
+        service_email = "sharkle.snu@gmail.com"
+        message_text = "안녕하세요. sharkle 회원가입을 위한 이메일 인증을 완료해주세요."
+        message_html = f"<p>인증번호는 <b>{code}</b>입니다.</p>"
+
+        try:
+            ses_mail_sender.send_email(
+                service_email,
+                destination_email,
+                "[샤클] 회원가입 인증번호 메일입니다. ",
+                message_text,
+                message_html,
+            )
+        except ClientError:
+            return Response(
+                status=status.HTTP_409_CONFLICT, data={"detail": "메일 발송에 실패했습니다."}
+            )
+        return Response({"message": "email sent to user"}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["post"])
+    def verify(self, request):
+        # TODO validation
+        email = request.data.get("email")
+        code = request.data.get("code")
+        is_verified = VerificationCode.check_email_code(email, code)
+        # TODO integrate signup logic
+        return Response({"verified": is_verified}, status=status.HTTP_200_OK)

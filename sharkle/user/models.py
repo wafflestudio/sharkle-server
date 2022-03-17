@@ -61,10 +61,8 @@ class VerificationCode(models.Model):
 
     @classmethod
     def check_email_code(cls, email, submitted_code):
-        time_limit = now() - datetime.timedelta(minutes=10)
-        result = cls.objects.filter(
-            email=email, code=submitted_code, last_update__gte=time_limit
-        )
+        # time_limit = now() - datetime.timedelta(minutes=10)
+        result = cls.objects.filter(email=email, code=submitted_code)
         if result.exists():
             return True
         return False

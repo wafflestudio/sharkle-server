@@ -59,38 +59,6 @@ class SesMailSender:
             return message_id
 
 
-class EmailSendView(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request):
-        # TODO Validation
-        destination_email = request.data.get("email")
-        verification_code = VerificationCode(email=destination_email)
-        verification_code.save(update_fields=["code"])
-        code = verification_code.code
-
-        ses_client = boto3.client("ses")
-        ses_mail_sender = SesMailSender(ses_client)
-        service_email = "sharkle.snu@gmail.com"
-        message_text = "안녕하세요. sharkle 회원가입을 위한 이메일 인증을 완료해주세요."
-        message_html = f"<p>인증번호는 <b>{code}</b>입니다.</p>"
-
-        try:
-            ses_mail_sender.send_email(
-                service_email,
-                destination_email,
-                "[샤클] 회원가입 인증번호 메일입니다. ",
-                message_text,
-                message_html,
-            )
-        except ClientError:
-            return Response(
-                status=status.HTTP_409_CONFLICT, data={"detail": "메일 발송에 실패했습니다."}
-            )
-
-        return Response({"message": "email sent to user"}, status=status.HTTP_200_OK)
-
-
 class EmailViewSet(viewsets.GenericViewSet):
     permission_classes = (permissions.AllowAny,)
 

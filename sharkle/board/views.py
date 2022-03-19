@@ -109,7 +109,8 @@ class BoardViewSet(viewsets.GenericViewSet):
 
         serializer = self.get_serializer(board, data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response(serializer.data, status.HTTP_201_CREATED)
+        # TODO serializer. save or update?
+        return Response(serializer.data, status.HTTP_201_CREATED)  # Q 201 created?
 
     def destroy(self, request, pk=None, **kwargs):
         user = request.user

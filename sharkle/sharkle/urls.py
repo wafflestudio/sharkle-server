@@ -23,6 +23,7 @@ urlpatterns = [
     path("api/v1/", include("circle.urls")),
     path("api/v1/", include("hashtag.urls")),
     path("api/v1/", include("board.urls")),
+    path("api/v1/", include("article.urls")),
 ]
 
 if settings.DEBUG:

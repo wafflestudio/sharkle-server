@@ -68,7 +68,7 @@ class BoardViewSet(viewsets.GenericViewSet):
             )
 
         board = self.get_queryset().filter(id=pk).first()
-        if board.circle.id != circle_id:
+        if board.circle.id != int(circle_id):
             return Response(
                 "게시판이 해당 동아리에 존재하지 않습니다.", status=status.HTTP_400_BAD_REQUEST
             )
@@ -102,13 +102,14 @@ class BoardViewSet(viewsets.GenericViewSet):
             )
 
         board = self.get_queryset().filter(id=pk).first()
-        if board.circle.id != circle_id:
+        if board.circle.id != int(circle_id):
             return Response(
                 "게시판이 해당 동아리에 존재하지 않습니다.", status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = self.get_serializer(board, data=request.data)
+        serializer = self.get_serializer(board, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        serializer.update(board, serializer.validated_data)
         return Response(serializer.data, status.HTTP_201_CREATED)
 
     def destroy(self, request, pk=None, **kwargs):

@@ -80,9 +80,28 @@ class CircleViewSet(viewsets.GenericViewSet):
             status=status.HTTP_200_OK, data={"detail": "deleted successfully"}
         )
 
+
+    def is_string_integeralbe(self, str):
+        if not str:
+            return True
+        for i in str.split(' '):
+            try:
+                int(i)
+            except ValueError:
+                return False
+        return True
+
     # GET /circle/
     def list(self, request):
         queryset = self.get_queryset()
+
+        error = {}
+        for i in ['tag', 'type0', 'type1']:
+            str = request.query_params.get(i, None)
+            if not self.is_string_integeralbe(str):
+                error[i] = i+" is not integer"
+        if error:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=error)
 
         # name 검색
         search = request.query_params.get("name", None)
@@ -95,12 +114,9 @@ class CircleViewSet(viewsets.GenericViewSet):
 
             for tag in tags:
                 q = Q(pk__in=[])
-                try:
-                    for i in HashtagCircle.objects.filter(hashtag__id=int(tag)):
-                        q |= Q(id=i.circle.id)
-                    queryset = queryset.filter(q)
-                except ValueError:
-                    return Response(status=status.HTTP_400_BAD_REQUEST, data="tag is not an integer")
+                for i in HashtagCircle.objects.filter(hashtag__id=int(tag)):
+                    q |= Q(id=i.circle.id)
+                queryset = queryset.filter(q)
 
         # tag_str 검색
         if request.query_params.get('tag_str', None):
@@ -119,13 +135,10 @@ class CircleViewSet(viewsets.GenericViewSet):
             if not request.query_params.get('type0'):
                 queryset = queryset.none()
             else:
-                try:
-                    q = Q()
-                    type0s = request.query_params.get('type0').split(' ')
-                    for type0 in type0s:
-                        q |= Q(type0=int(type0))
-                except ValueError:
-                    return Response(status=status.HTTP_400_BAD_REQUEST, data="type0 is not an integer")
+                q = Q()
+                type0s = request.query_params.get('type0').split(' ')
+                for type0 in type0s:
+                    q |= Q(type0=int(type0))
                 queryset = queryset.filter(q)
 
         # type1 검색
@@ -133,13 +146,10 @@ class CircleViewSet(viewsets.GenericViewSet):
             if not request.query_params.get('type1'):
                 queryset = queryset.none()
             else:
-                try:
-                    q = Q()
-                    type1s = request.query_params.get('type1').split(' ')
-                    for type1 in type1s:
-                        q |= Q(type1=int(type1))
-                except ValueError:
-                    return Response(status=status.HTTP_400_BAD_REQUEST, data="type1 is not an integer")
+                q = Q()
+                type1s = request.query_params.get('type1').split(' ')
+                for type1 in type1s:
+                    q |= Q(type1=int(type1))
                 queryset = queryset.filter(q)
 
         page = self.paginate_queryset(queryset)

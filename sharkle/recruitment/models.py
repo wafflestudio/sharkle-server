@@ -14,5 +14,5 @@ class RecruitmentSchedule(BaseModel):
     recruitment = models.ForeignKey(Recruitment, on_delete=models.CASCADE, related_name='schedules', null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
     start = models.DateTimeField()
-    end = models.DateTimeField()
+    end = models.DateTimeField(null=True)
     location = models.CharField(max_length=100, null=False, blank=True)

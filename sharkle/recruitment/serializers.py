@@ -1,5 +1,6 @@
 from rest_framework import serializers, status
 from .models import *
+from django.core.exceptions import ValidationError, PermissionDenied
 from common.custom_exception import CustomException
 
 class RecruitmentViewSerializer(serializers.ModelSerializer):
@@ -77,16 +78,45 @@ class RecruitScheduleViewSerializer(serializers.ModelSerializer):
 class RecruitScheduleSerializer(serializers.ModelSerializer):
     recruitment = serializers.IntegerField()
     name = serializers.CharField(max_length=100, allow_null=False, allow_blank=True)
-    start = serializers.DateTimeField()
-    end = serializers.DateTimeField()
-    location = serializers.CharField(max_length=100, allow_null=False, allow_blank=True)
+    start = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    end = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
+    location = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
 
     class Meta:
         model = RecruitmentSchedule
         fields = ['recruitment', 'name', 'start', 'end', 'location']
+
+    def validate(self, data):
+        if 'start' in data and 'end' in data:
+            if data['start'] > data['end']:
+                raise ValidationError({'end': "Start should be smaller then End"})
+
+        return super().validate(data)
 
     def create(self, validated_data):
 
         validated_data['recruitment'] = Recruitment.objects.get_or_none(id=validated_data['recruitment'])
 
         return super().create(validated_data)
+
+class RecruitScheduleUpdateSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
+    start = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
+    end = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
+    location = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
+
+    class Meta:
+        model = RecruitmentSchedule
+        fields = ['name', 'start', 'end', 'location']
+
+    def update(self, instance, validated_data):
+
+        start = validated_data.get('start', instance.start)
+        end = validated_data.get('end', instance.end)
+
+        if start and end:
+            if start > end:
+                raise CustomException({"end": "Start should be smaller then End"},
+                                      status_code=status.HTTP_400_BAD_REQUEST)
+
+        return super().update(instance, validated_data)

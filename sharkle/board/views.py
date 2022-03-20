@@ -68,7 +68,7 @@ class BoardViewSet(viewsets.GenericViewSet):
             )
 
         board = self.get_queryset().filter(id=pk).first()
-        if board.circle.id != circle_id:
+        if board.circle.id != int(circle_id):
             return Response(
                 "게시판이 해당 동아리에 존재하지 않습니다.", status=status.HTTP_400_BAD_REQUEST
             )
@@ -77,7 +77,8 @@ class BoardViewSet(viewsets.GenericViewSet):
             member = UserCirclePermission(user.id, circle_id)
             if not member.is_member():
                 return Response(
-                    "해당 게시판은 동아리원에게만 공개된 비밀 게시판입니다.", status=status.HTTP_400_BAD_REQUEST
+                    "해당 게시판은 동아리원에게만 공개된 비밀 게시판입니다.",
+                    status=status.HTTP_401_UNAUTHORIZED,
                 )
 
         serializer = self.get_serializer(board)
@@ -102,14 +103,15 @@ class BoardViewSet(viewsets.GenericViewSet):
             )
 
         board = self.get_queryset().filter(id=pk).first()
-        if board.circle.id != circle_id:
+        if board.circle.id != int(circle_id):
             return Response(
                 "게시판이 해당 동아리에 존재하지 않습니다.", status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = self.get_serializer(board, data=request.data)
+        serializer = self.get_serializer(board, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        return Response(serializer.data, status.HTTP_201_CREATED)
+        serializer.update(board, serializer.validated_data)
+        return Response(serializer.data, status.HTTP_200_OK)
 
     def destroy(self, request, pk=None, **kwargs):
         user = request.user

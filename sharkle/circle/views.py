@@ -102,6 +102,18 @@ class CircleViewSet(viewsets.GenericViewSet):
                 except ValueError:
                     return Response(status=status.HTTP_400_BAD_REQUEST, data="tag is not an integer")
 
+        # tag_str 검색
+        if request.query_params.get('tag_str', None):
+            strings = request.query_params.get('tag_str')
+            strings = strings.split(' ')
+
+            for string in strings:
+                q = Q(pk__in=[])
+
+                for i in HashtagCircle.objects.filter(hashtag__name=string):
+                    q |= Q(id=i.circle.id)
+                queryset = queryset.filter(q)
+
         # type0 검색
         if "type0" in request.query_params:
             if not request.query_params.get('type0'):

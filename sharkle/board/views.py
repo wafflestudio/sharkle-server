@@ -77,7 +77,8 @@ class BoardViewSet(viewsets.GenericViewSet):
             member = UserCirclePermission(user.id, circle_id)
             if not member.is_member():
                 return Response(
-                    "해당 게시판은 동아리원에게만 공개된 비밀 게시판입니다.", status=status.HTTP_400_BAD_REQUEST
+                    "해당 게시판은 동아리원에게만 공개된 비밀 게시판입니다.",
+                    status=status.HTTP_401_UNAUTHORIZED,
                 )
 
         serializer = self.get_serializer(board)

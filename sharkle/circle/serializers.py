@@ -205,14 +205,10 @@ class CircleUpdateSerializer(serializers.ModelSerializer):
         # extra_fields = ['problems']
 
     def update(self, instance, validated_data):
-        print(instance, validated_data)
-
         data = {}
         for i in HomepageSerializer.Meta.fields:
             if i in validated_data:
                 data[i] = validated_data.pop(i)
-
-        print(data, instance)
 
         serializer = HomepageSerializer(instance.homepage, data=data)
         serializer.is_valid(raise_exception=True)

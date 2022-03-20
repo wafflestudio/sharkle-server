@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "board",
     "hashtag",
     "circle",
+    "article",
 ]
 
 MIDDLEWARE = [

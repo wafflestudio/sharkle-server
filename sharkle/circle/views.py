@@ -88,18 +88,6 @@ class CircleViewSet(viewsets.GenericViewSet):
         search = request.query_params.get("name", None)
         queryset = self.get_queryset_search(search, queryset)
 
-        # tag_str 검색
-        if request.query_params.get('tag_str', None):
-            strings = request.query_params.get('tag_str')
-            strings = strings.split(' ')
-
-            for string in strings:
-                q = Q(pk__in=[])
-
-                for i in HashtagCircle.objects.filter(hashtag__name=string):
-                    q |= Q(id=i.circle.id)
-                queryset = queryset.filter(q)
-
         # tag 검색
         if request.query_params.get('tag', None):
             tags = request.query_params.get('tag')

@@ -35,7 +35,7 @@ class CircleViewSet(viewsets.GenericViewSet):
         # print(circle)
 
         return Response(
-            status=status.HTTP_200_OK, data=CircleViewSerializer(circle).data
+            status=status.HTTP_201_CREATED, data=CircleViewSerializer(circle).data
         )
 
     # GET /circle/{id}/

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from article.models import Article
 
 
-class ArticleSerializer(serializers.ModelSerializer):
+class ArticleCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = "__all__"
@@ -10,3 +10,9 @@ class ArticleSerializer(serializers.ModelSerializer):
             "board": {"required": True, "allow_null": False},
             "author": {"required": True, "allow_null": False},
         }
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = "__all__"

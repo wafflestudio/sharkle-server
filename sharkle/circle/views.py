@@ -91,42 +91,40 @@ class CircleViewSet(viewsets.GenericViewSet):
         # tag 검색
         if "tag" in request.query_params:
 
-            try:
-                tag = int(request.query_params.get("tag"))
-            except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="tag is not an integer"
-                )
+            tags = request.query_params.get('tag')
+            tags = tags.split(' ')
 
-            q = Q()
-            for i in HashtagCircle.objects.filter(hashtag__id=tag):
-                # print(i.circle)
-                q |= Q(id=i.circle.id)
-
-            if q:
-                queryset = queryset.filter(q)
-            else:
-                queryset = Circle.objects.none()
+            for tag in tags:
+                q = Q(pk__in=[])
+                try:
+                    for i in HashtagCircle.objects.filter(hashtag__id=int(tag)):
+                        q |= Q(id=i.circle.id)
+                    queryset = queryset.filter(q)
+                except ValueError:
+                    return Response(status=status.HTTP_400_BAD_REQUEST, data="tag is not an integer")
 
         # type0 검색
         if "type0" in request.query_params:
             try:
-                type0 = int(request.query_params.get("type0"))
+                q = Q(pk__in=[])
+                type0s = request.query_params.get('type0').split(' ')
+                for type0 in type0s:
+                    q |= Q(type0=int(type0))
             except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="type0 is not an integer"
-                )
-            queryset = queryset.filter(type0=type0)
+                return Response(status=status.HTTP_400_BAD_REQUEST, data="type0 is not an integer")
+
+            queryset = queryset.filter(q)
 
         # type1 검색
         if "type1" in request.query_params:
             try:
-                type1 = int(request.query_params.get("type1"))
+                q = Q(pk__in=[])
+                type1s = request.query_params.get('type1').split(' ')
+                for type1 in type1s:
+                    q |= Q(type1=int(type1))
             except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="type1 is not an integer"
-                )
-            queryset = queryset.filter(type1=type1)
+                return Response(status=status.HTTP_400_BAD_REQUEST, data="type1 is not an integer")
+            queryset = queryset.filter(q)
 
         page = self.paginate_queryset(queryset)
         if page is not None:

@@ -9,7 +9,7 @@ router = SimpleRouter()
 router.register("homepage", HomepageViewSet, basename="homepage")  # /circle/
 router.register("circle", CircleViewSet, basename="circle")
 router.register(
-    "circle/(?P<circle_id>\d+)/account/(?P<user_id>[-\w]+)",
+    "circle/(?P<circle_id>\d+)/account",
     UserCircleViewSet,
     basename="user_circle",
 )

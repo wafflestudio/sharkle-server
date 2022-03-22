@@ -175,22 +175,6 @@ class CircleViewSet(viewsets.GenericViewSet):
             queryset = queryset.filter(q)
         return queryset.distinct()
 
-class UserlistCircleViewSet(viewsets.GenericViewSet):
-    serializer_class = CircleSerializer
-    permission_classes = (permissions.AllowAny,)  # 테스트용 임시
-
-    # GET /circle/{id}/account/
-    def list(self, request, circle_id):
-
-        if not (circle := Circle.objects.get_or_none(id=circle_id)):
-            return Response(
-                status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
-            )
-
-
-        return Response(status=status.HTTP_400_BAD_REQUEST, data="시발")
-
 
 class UserCircleViewSet(viewsets.GenericViewSet):
     serializer_class = CircleSerializer
@@ -209,7 +193,6 @@ class UserCircleViewSet(viewsets.GenericViewSet):
         alarms = UserCircle_Alarm.objects.filter(circle=circle)
 
         page = None
-
         option = request.query_params.get('option', None)
         if option == 'alarm':
             if (page := self.paginate_queryset(alarms)) is not None:
@@ -258,9 +241,12 @@ class UserCircleViewSet(viewsets.GenericViewSet):
 
         return Response(status=status.HTTP_400_BAD_REQUEST, data=data)
 
+class UserCircleUpdateSet(viewsets.GenericViewSet):
+    serializer_class = CircleSerializer
+    permission_classes = (permissions.AllowAny,)  # 테스트용 임시
 
-    # PUT /circle/{id}/account/{id}/?option=
-    def update(self, request, circle_id, pk):
+    # PUT /circle/{id}/account/{id}/{name}/
+    def update(self, request, circle_id, user_id, pk):
 
         if not (circle := Circle.objects.get_or_none(id=circle_id)):
             return Response(
@@ -268,22 +254,23 @@ class UserCircleViewSet(viewsets.GenericViewSet):
                 data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
             )
 
-        if pk == "my":
+        if user_id == "my":
             user = request.user
-        elif User.objects.filter(id=pk):
-            user = User.objects.get(id=pk)
+        elif User.objects.filter(id=user_id):
+            user = User.objects.get(id=user_id)
         else:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": "wrong_id", "detail": "유저가 존재하지 않습니다."},
             )
 
-        option = request.query_params.get('option', None)
-        if option == "alarm":
+        if pk == "alarm":
             UserCircle_Alarm.objects.get_or_create(user=user, circle=circle)
-        if option == "member":
+
+        if pk == "member":
             UserCircle_Member.objects.get_or_create(user=user, circle=circle)
-        if option == "manager":
+
+        if pk == "manager":
             user_circle_member = UserCircle_Member.objects.get_or_create(
                 user=user, circle=circle
             )[0]
@@ -307,8 +294,8 @@ class UserCircleViewSet(viewsets.GenericViewSet):
             },
         )
 
-    # DELETE /circle/{id}/account/{id}/?option=
-    def delete(self, request, circle_id, pk):
+    # DELETE /circle/{id}/account/{id}/{name}/
+    def delete(self, request, circle_id, user_id, pk):
 
         if not (circle := Circle.objects.get_or_none(id=circle_id)):
             return Response(
@@ -316,31 +303,29 @@ class UserCircleViewSet(viewsets.GenericViewSet):
                 data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
             )
 
-        if pk == "my":
+        if user_id == "my":
             user = request.user
-        elif User.objects.filter(id=pk):
-            user = User.objects.get(id=pk)
+        elif User.objects.filter(id=user_id):
+            user = User.objects.get(id=user_id)
         else:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": "wrong_id", "detail": "유저가 존재하지 않습니다."},
             )
 
-        option = request.query_params.get('option', None)
-
-        if option == "alarm":
+        if pk == "alarm":
             if user_circle_alarm := UserCircle_Alarm.objects.get_or_none(
                 user=user, circle=circle
             ):
                 user_circle_alarm.delete()
 
-        if option == "member":
+        if pk == "member":
             if user_circle_member := UserCircle_Member.objects.get_or_none(
                 user=user, circle=circle
             ):
                 user_circle_member.delete()
 
-        if option == "manager":
+        if pk == "manager":
             if user_circle_member := UserCircle_Member.objects.get_or_none(
                 user=user, circle=circle
             ):

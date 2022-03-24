@@ -50,12 +50,15 @@ class CommentViewSet(viewsets.GenericViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # DELETE article/{id}/comment/{id}/
+    # DELETE article/{id}/comment/{id}/ TODO question
     def destroy(self, request, article_id, pk=None):
         if not (comment := Comment.objects.get_or_none(id=pk)):
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": "wrong_id", "detail": "댓글이 존재하지 않습니다."},
             )
-        comment.delete()
+        if not comment.replies:
+            comment.delete()
+        else:
+            comment.update(is_deleted=True)
         return Response("id :" + str(pk) + " 댓글이 제거 되었습니다.", status=status.HTTP_200_OK)

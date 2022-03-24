@@ -14,6 +14,6 @@ class Comment(BaseModel):
     content = models.CharField(max_length=1000, blank=False)  # TODO blank=False null
     created_at = models.DateTimeField(auto_now_add=True)
     reply_to = models.ForeignKey(
-        "self", on_delete=models.PROTECT, related_name="replies", null=True
+        "self", on_delete=models.SET_NULL, related_name="replies", null=True
     )  # TODO SET_NULL?
     is_deleted = models.BooleanField(default=False)

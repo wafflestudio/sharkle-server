@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "hashtag",
     "circle",
     "article",
+    "comment",
 ]
 
 MIDDLEWARE = [

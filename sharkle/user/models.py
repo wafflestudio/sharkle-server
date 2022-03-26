@@ -1,5 +1,8 @@
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.db import models
+import datetime
+from django.utils.timezone import now
+from random import randint
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):
@@ -45,3 +48,21 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+
+
+class VerificationCode(models.Model):
+    last_update = models.DateTimeField(auto_now=True)
+    email = models.EmailField(max_length=100, unique=True, primary_key=True)
+    code = models.PositiveIntegerField()
+
+    def save(self, *args, **kwargs):
+        self.code = randint(1000, 10000)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def check_email_code(cls, email, submitted_code):
+        # time_limit = now() - datetime.timedelta(minutes=10)
+        result = cls.objects.filter(email=email, code=submitted_code)
+        if result.exists():
+            return True
+        return False

@@ -13,6 +13,9 @@ pyenv activate $VIRTUAL_ENV
 
 cd $WORKING_DIR
 
+echo "[Deploy] : Create logging directory"
+mkdir /home/ec2-user/build/sharkle/logging/
+
 echo "[Deploy] : Copy Secretes to root directory"
 cp /home/ec2-user/.env/.env $WORKING_DIR
 

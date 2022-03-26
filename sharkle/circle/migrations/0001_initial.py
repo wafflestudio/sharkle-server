@@ -15,62 +15,153 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Circle',
+            name="Circle",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type0', models.PositiveSmallIntegerField(choices=[(0, '기타'), (1, '연합'), (2, '중앙'), (3, '단과대'), (4, '과')], default=0)),
-                ('type1', models.PositiveSmallIntegerField(choices=[(0, '기타'), (1, '학술/매체'), (2, '연행/예술'), (3, '취미/교양'), (4, '무예/운동'), (5, '인권/봉사'), (6, '종교')], default=0)),
-                ('name', models.CharField(max_length=100)),
-                ('bio', models.CharField(blank=True, max_length=300)),
-                ('introduction', models.CharField(blank=True, max_length=5000, null=True)),
-                ('tag', models.CharField(blank=True, max_length=500)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "type0",
+                    models.PositiveSmallIntegerField(
+                        choices=[(0, "기타"), (1, "연합"), (2, "중앙"), (3, "단과대"), (4, "과")],
+                        default=0,
+                    ),
+                ),
+                (
+                    "type1",
+                    models.PositiveSmallIntegerField(
+                        choices=[
+                            (0, "기타"),
+                            (1, "학술/매체"),
+                            (2, "연행/예술"),
+                            (3, "취미/교양"),
+                            (4, "무예/운동"),
+                            (5, "인권/봉사"),
+                            (6, "종교"),
+                        ],
+                        default=0,
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("bio", models.CharField(blank=True, max_length=300)),
+                (
+                    "introduction",
+                    models.CharField(blank=True, max_length=5000, null=True),
+                ),
+                ("tag", models.CharField(blank=True, max_length=500)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Homepage',
+            name="Homepage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('homepage', models.CharField(max_length=500, null=True)),
-                ('facebook', models.CharField(max_length=500, null=True)),
-                ('instagram', models.CharField(max_length=500, null=True)),
-                ('twitter', models.CharField(max_length=500, null=True)),
-                ('youtube', models.CharField(max_length=500, null=True)),
-                ('tiktok', models.CharField(max_length=500, null=True)),
-                ('band', models.CharField(max_length=500, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("homepage", models.CharField(max_length=500, null=True)),
+                ("facebook", models.CharField(max_length=500, null=True)),
+                ("instagram", models.CharField(max_length=500, null=True)),
+                ("twitter", models.CharField(max_length=500, null=True)),
+                ("youtube", models.CharField(max_length=500, null=True)),
+                ("tiktok", models.CharField(max_length=500, null=True)),
+                ("band", models.CharField(max_length=500, null=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='UserCircle_Member',
+            name="UserCircle_Member",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_manager', models.BooleanField(default=False)),
-                ('circle', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='membership', to='circle.circle')),
-                ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='membership', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("is_manager", models.BooleanField(default=False)),
+                (
+                    "circle",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="membership",
+                        to="circle.circle",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="membership",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='UserCircle_Alarm',
+            name="UserCircle_Alarm",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('circle', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='subscribe', to='circle.circle')),
-                ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='subscribe', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "circle",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="subscribe",
+                        to="circle.circle",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="subscribe",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='circle',
-            name='homepage',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='circle.homepage'),
+            model_name="circle",
+            name="homepage",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="circle.homepage",
+            ),
         ),
     ]

@@ -26,7 +26,7 @@ jobs:
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8.10
+        python-version: 3.8.10    
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
@@ -38,7 +38,7 @@ jobs:
       env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           SECRET_KEY: '#20i1gz6%r9ri94hv^f(kz*%o80@x!anpp%qcc_+k&s^*63n1$' #Auto generated seceret key, doesn't have any mean
-          DB_USER: 'sharkle-CI-User'
-          DB_PASSWORD: 'sharkleCI-test-DB'
-          DB_HOST: 'rds'
+          DB_USER: 'root'
+          DB_PASSWORD: 'password'
+          DB_HOST: '127.0.0.1'
       working-directory: ./sharkle

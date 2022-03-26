@@ -35,7 +35,7 @@ class CircleViewSet(viewsets.GenericViewSet):
         # print(circle)
 
         return Response(
-            status=status.HTTP_200_OK, data=CircleViewSerializer(circle).data
+            status=status.HTTP_201_CREATED, data=CircleViewSerializer(circle).data
         )
 
     # GET /circle/{id}/
@@ -80,53 +80,77 @@ class CircleViewSet(viewsets.GenericViewSet):
             status=status.HTTP_200_OK, data={"detail": "deleted successfully"}
         )
 
+
+    def is_string_integeralbe(self, str):
+        if not str:
+            return True
+        for i in str.split(' '):
+            try:
+                int(i)
+            except ValueError:
+                return False
+        return True
+
     # GET /circle/
     def list(self, request):
         queryset = self.get_queryset()
+
+        error = {}
+        for i in ['tag', 'type0', 'type1']:
+            str = request.query_params.get(i, None)
+            if not self.is_string_integeralbe(str):
+                error[i] = i+" is not integer"
+        if error:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=error)
 
         # name 검색
         search = request.query_params.get("name", None)
         queryset = self.get_queryset_search(search, queryset)
 
         # tag 검색
-        if "tag" in request.query_params:
+        if request.query_params.get('tag', None):
+            tags = request.query_params.get('tag')
+            tags = tags.split(' ')
 
-            try:
-                tag = int(request.query_params.get("tag"))
-            except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="tag is not an integer"
-                )
-
-            q = Q()
-            for i in HashtagCircle.objects.filter(hashtag__id=tag):
-                # print(i.circle)
-                q |= Q(id=i.circle.id)
-
-            if q:
+            for tag in tags:
+                q = Q(pk__in=[])
+                for i in HashtagCircle.objects.filter(hashtag__id=int(tag)):
+                    q |= Q(id=i.circle.id)
                 queryset = queryset.filter(q)
-            else:
-                queryset = Circle.objects.none()
+
+        # tag_str 검색
+        if request.query_params.get('tag_str', None):
+            strings = request.query_params.get('tag_str')
+            strings = strings.split(' ')
+
+            for string in strings:
+                q = Q(pk__in=[])
+
+                for i in HashtagCircle.objects.filter(hashtag__name=string):
+                    q |= Q(id=i.circle.id)
+                queryset = queryset.filter(q)
 
         # type0 검색
         if "type0" in request.query_params:
-            try:
-                type0 = int(request.query_params.get("type0"))
-            except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="type0 is not an integer"
-                )
-            queryset = queryset.filter(type0=type0)
+            if not request.query_params.get('type0'):
+                queryset = queryset.none()
+            else:
+                q = Q()
+                type0s = request.query_params.get('type0').split(' ')
+                for type0 in type0s:
+                    q |= Q(type0=int(type0))
+                queryset = queryset.filter(q)
 
         # type1 검색
         if "type1" in request.query_params:
-            try:
-                type1 = int(request.query_params.get("type1"))
-            except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="type1 is not an integer"
-                )
-            queryset = queryset.filter(type1=type1)
+            if not request.query_params.get('type1'):
+                queryset = queryset.none()
+            else:
+                q = Q()
+                type1s = request.query_params.get('type1').split(' ')
+                for type1 in type1s:
+                    q |= Q(type1=int(type1))
+                queryset = queryset.filter(q)
 
         page = self.paginate_queryset(queryset)
         if page is not None:

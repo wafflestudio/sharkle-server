@@ -32,7 +32,7 @@ class RecruitmentUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if 'circle' in validated_data:
             validated_data['circle'] = Circle.objects.get_or_none(id=validated_data['circle'])
-        print(validated_data)
+        #print(validated_data)
         return super().update(instance, validated_data)
 
 class RecruitmentSerializer(serializers.ModelSerializer):

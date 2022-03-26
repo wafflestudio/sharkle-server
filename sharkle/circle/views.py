@@ -190,6 +190,7 @@ class UserCircleViewSet(viewsets.GenericViewSet):
 
         managers = UserCircle_Member.objects.filter(is_manager=True, circle=circle)
         members = UserCircle_Member.objects.filter(is_manager=False, circle=circle)
+        all_members = UserCircle_Member.objects.filter(circle=circle)
         alarms = UserCircle_Alarm.objects.filter(circle=circle)
 
         page = None
@@ -203,6 +204,10 @@ class UserCircleViewSet(viewsets.GenericViewSet):
         if option == 'manager':
             if (page := self.paginate_queryset(managers)) is not None:
                 serializer = UserStatus_M(page, many=True)
+        if option == 'all_members':
+            if (page := self.paginate_queryset(all_members)) is not None:
+                serializer = UserStatus_M(page, many=True)
+
 
         if page is not None:
             return self.get_paginated_response(serializer.data)

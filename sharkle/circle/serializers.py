@@ -64,27 +64,11 @@ class UserStatus_M(serializers.ModelSerializer):
         return bool(UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle, is_manager=True))
 
 
-class UserStatus_A(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    alarm = serializers.SerializerMethodField()
-    member = serializers.SerializerMethodField()
-    manager = serializers.SerializerMethodField()
+class UserStatus_A(UserStatus_M):
 
     class Meta:
         model = UserCircle_Alarm
         fields = ['id', 'alarm', 'member', 'manager']
-
-    def get_id(self, obj):
-        return obj.user.id
-
-    def get_alarm(self, obj):
-        return bool(UserCircle_Alarm.objects.get_or_none(user=obj.user, circle=obj.circle))
-
-    def get_member(self, obj):
-        return bool(UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle))
-
-    def get_manager(self, obj):
-        return bool(UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle, is_manager=True))
 
 class CircleViewSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()

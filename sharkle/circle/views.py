@@ -204,7 +204,7 @@ class UserCircleViewSet(viewsets.GenericViewSet):
         if option == 'manager':
             if (page := self.paginate_queryset(managers)) is not None:
                 serializer = UserStatus_M(page, many=True)
-        if option == 'all_members':
+        if option == 'all_member':
             if (page := self.paginate_queryset(all_members)) is not None:
                 serializer = UserStatus_M(page, many=True)
 

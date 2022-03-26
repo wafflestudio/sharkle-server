@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 from comment.views import CommentViewSet
 
-app_name = "article"
+app_name = "comment"
 
 router = SimpleRouter()
 router.register(

@@ -24,7 +24,7 @@ class CommentViewSet(viewsets.GenericViewSet):
         serializer.save()
         return Response(serializer.data, status.HTTP_201_CREATED)
 
-    # GET article/{id}/comment/ TODO nested
+    # GET article/{id}/comment/ TODO nested ??
     def list(self, request, article_id):
         comments = self.get_queryset().filter(article=article_id)
         return Response(self.get_serializer(comments, many=True).data)

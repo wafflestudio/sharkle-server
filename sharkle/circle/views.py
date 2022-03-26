@@ -240,7 +240,7 @@ class UserCircleUpdateSet(viewsets.GenericViewSet):
                 data["membership"] = "관리자"
         data["alarm"] = bool(alarm)
 
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=data)
+        return Response(status=status.HTTP_200_OK, data=data)
 
     # GET /circle/{id}/account/{id}/{name}/
     def retrieve(self, request, circle_id, user_id, pk):

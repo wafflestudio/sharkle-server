@@ -59,3 +59,5 @@ class ArticleViewSet(viewsets.GenericViewSet):
             )
         article.delete()
         return Response("id :" + str(pk) + " 게시글이 제거 되었습니다.", status=status.HTTP_200_OK)
+
+## possible to modify main?

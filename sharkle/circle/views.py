@@ -188,29 +188,22 @@ class UserCircleViewSet(viewsets.GenericViewSet):
                 data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
             )
 
-        managers = UserCircle_Member.objects.filter(is_manager=True, circle=circle)
-        members = UserCircle_Member.objects.filter(is_manager=False, circle=circle)
-        all_members = UserCircle_Member.objects.filter(circle=circle)
-        alarms = UserCircle_Alarm.objects.filter(circle=circle)
-
-        page = None
         option = request.query_params.get('option', None)
-        if option == 'alarm':
-            if (page := self.paginate_queryset(alarms)) is not None:
-                serializer = UserStatus_A(page, many=True)
-        if option == 'member':
-            if (page := self.paginate_queryset(members)) is not None:
-                serializer = UserStatus_M(page, many=True)
-        if option == 'manager':
-            if (page := self.paginate_queryset(managers)) is not None:
-                serializer = UserStatus_M(page, many=True)
-        if option == 'all_member':
-            if (page := self.paginate_queryset(all_members)) is not None:
-                serializer = UserStatus_M(page, many=True)
 
+        objects = dict()
+        objects['manager'] = UserCircle_Member.objects.filter(is_manager=True, circle=circle)
+        objects['member'] = UserCircle_Member.objects.filter(is_manager=False, circle=circle)
+        objects['all_member'] = UserCircle_Member.objects.filter(circle=circle)
+        objects['alarm'] = UserCircle_Alarm.objects.filter(circle=circle)
 
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
+        if option in ('alarm', ):
+            page = self.paginate_queryset(objects[option])
+            return self.get_paginated_response(UserStatus_A(page, many=True).data)
+
+        if option in ('member', 'manager', 'all_member', ):
+            page = self.paginate_queryset(objects[option])
+            return self.get_paginated_response(UserStatus_M(page, many=True).data)
+
         return Response(status=status.HTTP_400_BAD_REQUEST, data="pagination fault")
 
 class UserCircleUpdateSet(viewsets.GenericViewSet):

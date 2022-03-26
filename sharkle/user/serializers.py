@@ -5,6 +5,21 @@ from rest_framework_simplejwt.serializers import (
 )
 from user.models import User
 
+class UserViewSerializer(serializers.ModelSerializer):
+
+    id = serializers.IntegerField(required=False)
+    user_id = serializers.CharField()
+    username = serializers.CharField()
+    email = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "user_id",
+            "username",
+            "email"
+        ]
 
 class UserSignUpSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)

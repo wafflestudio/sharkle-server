@@ -1,13 +1,24 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework import permissions, status
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from user.serializers import UserSignUpSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
+from .serializers import UserViewSerializer
+from .models import User
 
+class UserViewSet(viewsets.GenericViewSet):
+    permission_classes = (permissions.IsAuthenticated,)  # 테스트용 임시
+
+    # GET /account/{id}/
+    def retrieve(self, request, pk):
+        if pk == 'my':
+            return Response(data=UserViewSerializer(request.data).data, status=status.HTTP_200_OK)
+        user = User.objects.get(id=pk)
+        return Response(data=UserViewSerializer(user).data, status=status.HTTP_200_OK)
 
 class PingPongView(APIView):
     permission_classes = (permissions.AllowAny,)

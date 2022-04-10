@@ -57,8 +57,11 @@ class CommentViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": "wrong_id", "detail": "댓글이 존재하지 않습니다."},
             )
-        if not comment.replies:
+        if not comment.replies.exists():
             comment.delete()
-        else:
-            comment.update(is_deleted=True)
+        else:  # 삭제하려는 댓글에 달린 대댓글이 존재하는 경우
+            comment.is_delete = True
+            comment.content = "삭제된 댓글입니다."
+            comment.author = None
+            comment.save()
         return Response("id :" + str(pk) + " 댓글이 제거 되었습니다.", status=status.HTTP_200_OK)

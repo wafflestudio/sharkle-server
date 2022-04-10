@@ -130,7 +130,7 @@ class GetCommentTestCase(TestCase):
         cls.comment1B = CommentFactory(content="comment2", article=cls.articleB)
         cls.user_token = "Bearer " + str(RefreshToken.for_user(cls.user).access_token)
 
-    def test_list_article_success(self):
+    def test_list_comment_success(self):
         response = self.client.get(
             f"/api/v1/article/{self.articleA.id}/comment/",
             data={},
@@ -140,9 +140,9 @@ class GetCommentTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
-        print(response_data)  # TODO. count?
+        # TODO. count?
 
-    def test_retrieve_article_success(self):
+    def test_retrieve_comment_success(self):
         response = self.client.get(
             f"/api/v1/article/{self.articleA.id}/comment/{self.comment1A.id}/",
             data={},
@@ -152,9 +152,9 @@ class GetCommentTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
-        print(response_data)  # TODO
+        self.assertEqual(response_data["content"], "comment1")
 
-    def test_retrieve_article_not_found(self):
+    def test_retrieve_comment_not_found(self):
         response = self.client.get(
             f"/api/v1/article/{self.articleA.id}/comment/{Comment.objects.count()+40}/",
             data={},
@@ -163,3 +163,86 @@ class GetCommentTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class UpdateCommentTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.article = ArticleFactory()
+        cls.comment = CommentFactory(content="comment", article=cls.article)
+        cls.user_token = "Bearer " + str(RefreshToken.for_user(cls.user).access_token)
+
+    def test_update_article_success(self):
+        data = {"content": "update comment"}
+        response = self.client.put(
+            f"/api/v1/article/{self.article.id}/comment/{self.comment.id}/",
+            data=data,
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.user_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual("update comment", response_data["content"])
+
+    def test_non_existing_id(self):
+        data = {"content": "update comment"}
+        response = self.client.put(
+            f"/api/v1/article/{self.article.id}/comment/{Comment.objects.count()+30}/",
+            data=data,
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.user_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual("comment", self.comment.content)
+
+
+class DeleteCommentTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.article = ArticleFactory()
+        cls.article2 = ArticleFactory()
+        cls.comment = CommentFactory(content="comment", article=cls.article)
+        cls.comment2 = CommentFactory(content="comment2", article=cls.article2)
+        cls.user_token = "Bearer " + str(RefreshToken.for_user(cls.user).access_token)
+
+    def test_delete_comment_success(self):
+        prev_comment_count = Comment.objects.count()
+        prev_article_count = Article.objects.count()
+
+        response = self.client.delete(
+            f"/api/v1/article/{self.article.id}/comment/{self.comment.id}/",
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.user_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(prev_comment_count - 1, Comment.objects.count())
+        self.assertEqual(prev_article_count, Article.objects.count())
+
+    # delete article -> comment deleted
+    def test_cascade_comment_success(self):
+        prev_comment_count = Comment.objects.count()
+        prev_article_count = Article.objects.count()
+        response = self.client.delete(
+            f"/api/v1/circle/{self.article2.board.circle.id}/board/{self.article2.board.id}/article/{self.article2.id}/",
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.user_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(prev_comment_count - 1, Comment.objects.count())
+        self.assertEqual(prev_article_count - 1, Article.objects.count())
+
+    def test_non_existing_id(self):
+        prev_count = Comment.objects.count()
+        response = self.client.delete(
+            f"/api/v1/article/{self.article.id}/comment/{Comment.objects.count()+30}/",
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.user_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(prev_count, Comment.objects.count())

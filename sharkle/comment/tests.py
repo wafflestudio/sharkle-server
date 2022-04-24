@@ -6,7 +6,7 @@ from django.test import TestCase
 from factory.django import DjangoModelFactory
 from rest_framework_simplejwt.tokens import RefreshToken
 from board.models import Board
-from circle.models import Circle
+from circle.models import Circle, UserCircle_Member
 from article.models import Article
 from comment.models import Comment
 from user.models import User
@@ -22,11 +22,6 @@ class UserFactory(DjangoModelFactory):
     email = factory.LazyAttribute(lambda o: "%s@sharkle.org" % o.username)
     password = "1234"
 
-    @classmethod
-    def create(cls, **kwargs):
-        user = User.objects.create_user(**kwargs)
-        return user
-
 
 class CircleFactory(DjangoModelFactory):
     class Meta:
@@ -35,6 +30,14 @@ class CircleFactory(DjangoModelFactory):
     name = factory.Sequence(lambda n: "Circle %d" % n)
     bio = factory.Sequence(lambda n: "Circle %d bio" % n)
     tag = "sample_tag"
+
+
+class MemberFactory(DjangoModelFactory):
+    class Meta:
+        model = UserCircle_Member
+
+    user = factory.SubFactory(UserFactory)
+    circle = factory.SubFactory(CircleFactory)
 
 
 class BoardFactory(DjangoModelFactory):
@@ -168,22 +171,30 @@ class GetCommentTestCase(TestCase):
 class UpdateCommentTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
-        cls.article = ArticleFactory()
-        cls.comment = CommentFactory(content="comment", article=cls.article)
-        cls.user_token = "Bearer " + str(RefreshToken.for_user(cls.user).access_token)
+        cls.member = MemberFactory(is_manager=True)
+        cls.circle = cls.member.circle
+        cls.board = BoardFactory(circle=cls.circle)
+        cls.manager = cls.member.user  # manager of circle
+        cls.author = (
+            UserFactory()
+        )  # member of same circle, the author of the target comment
+        cls.member_author = MemberFactory(circle=cls.circle, user=cls.author)
+        cls.outsider = UserFactory()
 
-    def test_update_article_success(self):
-        data = {"content": "update comment"}
-        response = self.client.put(
-            f"/api/v1/article/{self.article.id}/comment/{self.comment.id}/",
-            data=data,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=self.user_token,
+        cls.article = ArticleFactory(board=cls.board)
+        cls.comment = CommentFactory(
+            content="comment", article=cls.article, author=cls.author
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data = response.json()
-        self.assertEqual("update comment", response_data["content"])
+
+        cls.manager_token = "Bearer " + str(
+            RefreshToken.for_user(cls.manager).access_token
+        )
+        cls.author_token = "Bearer " + str(
+            RefreshToken.for_user(cls.author).access_token
+        )
+        cls.outsider_token = "Bearer " + str(
+            RefreshToken.for_user(cls.outsider).access_token
+        )
 
     def test_non_existing_id(self):
         data = {"content": "update comment"}
@@ -191,36 +202,117 @@ class UpdateCommentTestCase(TestCase):
             f"/api/v1/article/{self.article.id}/comment/{Comment.objects.count()+30}/",
             data=data,
             content_type="application/json",
-            HTTP_AUTHORIZATION=self.user_token,
+            HTTP_AUTHORIZATION=self.manager_token,
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual("comment", self.comment.content)
 
+    def test_update_comment_by_author_success(self):
+        data = {"content": "update comment"}
+        response = self.client.put(
+            f"/api/v1/article/{self.article.id}/comment/{self.comment.id}/",
+            data=data,
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.author_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual("update comment", response_data["content"])
+
+    def test_update_comment_by_manager_success(self):
+        data = {"content": "update comment"}
+        response = self.client.put(
+            f"/api/v1/article/{self.article.id}/comment/{self.comment.id}/",
+            data=data,
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.manager_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual("update comment", response_data["content"])
+
+    def test_update_comment_by_outsider_fail(self):
+        data = {"content": "no permission to update"}
+        response = self.client.put(
+            f"/api/v1/article/{self.article.id}/comment/{self.comment.id}/",
+            data=data,
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.outsider_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 class DeleteCommentTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
-        cls.article = ArticleFactory()
-        cls.article2 = ArticleFactory()
-        cls.comment = CommentFactory(content="comment", article=cls.article)
-        cls.comment2 = CommentFactory(content="comment2", article=cls.article2)
-        cls.user_token = "Bearer " + str(RefreshToken.for_user(cls.user).access_token)
+        cls.member = MemberFactory(is_manager=True)
+        cls.circle = cls.member.circle
+        cls.board = BoardFactory(circle=cls.circle)
+        cls.manager = cls.member.user  # manager of circle
+        cls.author = (
+            UserFactory()
+        )  # member of same circle, the author of the target comment
+        cls.member_author = MemberFactory(circle=cls.circle, user=cls.author)
+        cls.outsider = UserFactory()
 
-    def test_delete_comment_success(self):
+        cls.article1 = ArticleFactory(board=cls.board)
+        cls.article2 = ArticleFactory(board=cls.board)
+        cls.comment1 = CommentFactory(
+            content="comment", article=cls.article1, author=cls.author
+        )
+        cls.comment2 = CommentFactory(
+            content="comment", article=cls.article2, author=cls.author
+        )
+        cls.comment3 = CommentFactory(
+            content="comment", article=cls.article1, author=cls.author
+        )
+        cls.reply = CommentFactory(
+            content="comment",
+            article=cls.article1,
+            author=cls.author,
+            reply_to=cls.comment3,
+        )
+
+        cls.manager_token = "Bearer " + str(
+            RefreshToken.for_user(cls.manager).access_token
+        )
+        cls.author_token = "Bearer " + str(
+            RefreshToken.for_user(cls.author).access_token
+        )
+        cls.outsider_token = "Bearer " + str(
+            RefreshToken.for_user(cls.outsider).access_token
+        )
+
+    def test_delete_comment_by_author_success(self):
         prev_comment_count = Comment.objects.count()
         prev_article_count = Article.objects.count()
 
         response = self.client.delete(
-            f"/api/v1/article/{self.article.id}/comment/{self.comment.id}/",
+            f"/api/v1/article/{self.article1.id}/comment/{self.comment1.id}/",
             content_type="application/json",
-            HTTP_AUTHORIZATION=self.user_token,
+            HTTP_AUTHORIZATION=self.author_token,
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(prev_comment_count - 1, Comment.objects.count())
         self.assertEqual(prev_article_count, Article.objects.count())
+
+    def test_delete_comment_with_replies_by_manager_success(self):
+        prev_comment_count = Comment.objects.count()
+        prev_article_count = Article.objects.count()
+
+        response = self.client.delete(
+            f"/api/v1/article/{self.article1.id}/comment/{self.comment3.id}/",
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.manager_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            prev_comment_count, Comment.objects.count()
+        )  # comment count does not change
+        self.assertEqual("삭제된 댓글입니다.", Comment.objects.get(id=self.comment3.id).content)
 
     # delete article -> comment deleted
     def test_cascade_comment_success(self):
@@ -229,7 +321,7 @@ class DeleteCommentTestCase(TestCase):
         response = self.client.delete(
             f"/api/v1/circle/{self.article2.board.circle.id}/board/{self.article2.board.id}/article/{self.article2.id}/",
             content_type="application/json",
-            HTTP_AUTHORIZATION=self.user_token,
+            HTTP_AUTHORIZATION=self.author_token,
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -239,9 +331,9 @@ class DeleteCommentTestCase(TestCase):
     def test_non_existing_id(self):
         prev_count = Comment.objects.count()
         response = self.client.delete(
-            f"/api/v1/article/{self.article.id}/comment/{Comment.objects.count()+30}/",
+            f"/api/v1/article/{self.article1.id}/comment/{Comment.objects.count()+30}/",
             content_type="application/json",
-            HTTP_AUTHORIZATION=self.user_token,
+            HTTP_AUTHORIZATION=self.manager_token,
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

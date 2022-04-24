@@ -3,6 +3,7 @@ from rest_framework import viewsets, permissions, status
 from comment.models import Comment
 from comment.serializers import CommentSerializer, CommentCreateSerializer
 from rest_framework.response import Response
+from circle.permission import UserCirclePermission
 
 # Create your views here.
 class CommentViewSet(viewsets.GenericViewSet):
@@ -40,10 +41,21 @@ class CommentViewSet(viewsets.GenericViewSet):
 
     # PUT article/{id}/comment/{id}/
     def update(self, request, article_id, pk=None):
+        user = request.user
         if not (comment := Comment.objects.get_or_none(id=pk)):
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": "wrong_id", "detail": "댓글이 존재하지 않습니다."},
+            )
+        circle_permission = UserCirclePermission(
+            user.id, comment.article.board.circle.id
+        )
+        if comment.author != user and not (
+            circle_permission.is_member() and circle_permission.is_manager()
+        ):
+            return Response(
+                "댓글 작성자 또는 동아리 관리자만 댓글을 수정할 수 있습니다.",
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         serializer = self.get_serializer(comment, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -52,10 +64,21 @@ class CommentViewSet(viewsets.GenericViewSet):
 
     # DELETE article/{id}/comment/{id}/ TODO question
     def destroy(self, request, article_id, pk=None):
+        user = request.user
         if not (comment := Comment.objects.get_or_none(id=pk)):
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": "wrong_id", "detail": "댓글이 존재하지 않습니다."},
+            )
+        circle_permission = UserCirclePermission(
+            user.id, comment.article.board.circle.id
+        )
+        if comment.author != user and not (
+            circle_permission.is_member() and circle_permission.is_manager()
+        ):
+            return Response(
+                "댓글 작성자 또는 동아리 관리자만 댓글을 삭제할 수 있습니다.",
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         if not comment.replies.exists():
             comment.delete()

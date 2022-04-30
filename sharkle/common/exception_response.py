@@ -29,7 +29,8 @@ class ErrorCode(Enum):
 
     DATA_NOT_FOUND = 4000  # NOT used
     CIRCLE_NOT_FOUND = 4001
-    BOARD_NOT_FOUND = 4001
+    BOARD_NOT_FOUND = 4002
+    USER_NOT_FOUND = 4003
 
     CONFLICT = 9000  # NOT used
 

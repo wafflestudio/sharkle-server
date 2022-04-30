@@ -15,7 +15,8 @@ class ExceptionResponse:
 
     def to_response(self):
         return Response(
-            status=self.status, data={"detail": self.message, "code": self.code}
+            status=self.status,
+            data={"status": self.status, "detail": self.message, "code": self.code},
         )
 
 
@@ -31,7 +32,10 @@ class ErrorCode(Enum):
     CIRCLE_NOT_FOUND = 4001
     BOARD_NOT_FOUND = 4002
     USER_NOT_FOUND = 4003
+    RECRUITMENT_NOT_FOUND = 4004
+    SCHEDULE_NOT_FOUND = 4005
 
     CONFLICT = 9000  # NOT used
+    PAGINATION_FAULT = 9001
 
     SERVER_ERROR = 10000  # NOT used

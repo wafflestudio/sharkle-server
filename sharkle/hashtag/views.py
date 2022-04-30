@@ -1,9 +1,9 @@
 from rest_framework import serializers, status, viewsets, permissions
 from rest_framework.response import Response
+
+from common.exception_response import ExceptionResponse, ErrorCode
 from .serializers import *
 from .models import *
-from django.db.models import Q
-from user.models import User
 
 
 class HashTagViewSet(viewsets.GenericViewSet):
@@ -21,7 +21,11 @@ class HashTagViewSet(viewsets.GenericViewSet):
             )
             return self.get_paginated_response(serializer.data)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data="pagination fault")
+            return ExceptionResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                detail="Page is None",
+                code=ErrorCode.PAGINATION_FAULT,
+            ).to_response()
 
     def get_queryset(self):
         return Hashtag.objects.all()

@@ -55,6 +55,7 @@ class CircleViewSerializer(serializers.ModelSerializer):
 
     introduction = serializers.CharField()
     tag = serializers.CharField()
+    tag_integer = serializers.SerializerMethodField()
 
     class Meta:
         model = Circle
@@ -66,12 +67,17 @@ class CircleViewSerializer(serializers.ModelSerializer):
             "bio",
             "introduction",
             "tag",
+            "tag_integer",
             "homepage",
         ]
         # extra_fields = ['problems']
 
     def get_homepage(self, obj):
         return HomepageSerializer(obj.homepage).data
+
+    def get_tag_integer(self, obj):
+        query = HashtagCircle.objects.filter(circle=obj)
+        return [hc.hashtag.id for hc in query]
 
 
 class CircleSerializer(serializers.ModelSerializer):

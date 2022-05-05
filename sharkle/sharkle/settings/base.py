@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "user",
+    'recruitment',
     "board",
     "hashtag",
     "circle",

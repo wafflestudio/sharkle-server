@@ -1,5 +1,7 @@
 from rest_framework import serializers, status, viewsets, permissions
 from rest_framework.response import Response
+
+from common.exception_response import ExceptionResponse, ErrorCode
 from .serializers import *
 from .models import *
 from django.db.models import Q
@@ -35,16 +37,17 @@ class CircleViewSet(viewsets.GenericViewSet):
         # print(circle)
 
         return Response(
-            status=status.HTTP_200_OK, data=CircleViewSerializer(circle).data
+            status=status.HTTP_201_CREATED, data=CircleViewSerializer(circle).data
         )
 
     # GET /circle/{id}/
     def retrieve(self, request, pk):
         if not (circle := Circle.objects.get_or_none(id=pk)):
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
-            )
+                detail="id: " + str(pk) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
 
         return Response(
             status=status.HTTP_200_OK, data=CircleViewSerializer(circle).data
@@ -53,10 +56,11 @@ class CircleViewSet(viewsets.GenericViewSet):
     # PUT /circle/{id}/
     def put(self, request, pk):
         if not (circle := Circle.objects.get_or_none(id=pk)):
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
-            )
+                detail="id: " + str(pk) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
 
         serializer = CircleUpdateSerializer(circle, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -69,10 +73,11 @@ class CircleViewSet(viewsets.GenericViewSet):
     # DELETE /circle/{id}/
     def destroy(self, instance, pk):
         if not (circle := Circle.objects.get_or_none(id=pk)):
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
-            )
+                detail="id: " + str(pk) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
 
         circle.delete()
 
@@ -80,53 +85,76 @@ class CircleViewSet(viewsets.GenericViewSet):
             status=status.HTTP_200_OK, data={"detail": "deleted successfully"}
         )
 
+    def is_string_integeralbe(self, str):
+        if not str:
+            return True
+        for i in str.split(" "):
+            try:
+                int(i)
+            except ValueError:
+                return False
+        return True
+
     # GET /circle/
     def list(self, request):
         queryset = self.get_queryset()
+
+        error = {}
+        for i in ["tag", "type0", "type1"]:
+            str = request.query_params.get(i, None)
+            if not self.is_string_integeralbe(str):
+                error[i] = i + " is not integer"
+        if error:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=error)
 
         # name 검색
         search = request.query_params.get("name", None)
         queryset = self.get_queryset_search(search, queryset)
 
         # tag 검색
-        if "tag" in request.query_params:
+        if request.query_params.get("tag", None):
+            tags = request.query_params.get("tag")
+            tags = tags.split(" ")
 
-            try:
-                tag = int(request.query_params.get("tag"))
-            except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="tag is not an integer"
-                )
-
-            q = Q()
-            for i in HashtagCircle.objects.filter(hashtag__id=tag):
-                # print(i.circle)
-                q |= Q(id=i.circle.id)
-
-            if q:
+            for tag in tags:
+                q = Q(pk__in=[])
+                for i in HashtagCircle.objects.filter(hashtag__id=int(tag)):
+                    q |= Q(id=i.circle.id)
                 queryset = queryset.filter(q)
-            else:
-                queryset = Circle.objects.none()
+
+        # tag_str 검색
+        if request.query_params.get("tag_str", None):
+            strings = request.query_params.get("tag_str")
+            strings = strings.split(" ")
+
+            for string in strings:
+                q = Q(pk__in=[])
+
+                for i in HashtagCircle.objects.filter(hashtag__name=string):
+                    q |= Q(id=i.circle.id)
+                queryset = queryset.filter(q)
 
         # type0 검색
         if "type0" in request.query_params:
-            try:
-                type0 = int(request.query_params.get("type0"))
-            except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="type0 is not an integer"
-                )
-            queryset = queryset.filter(type0=type0)
+            if not request.query_params.get("type0"):
+                queryset = queryset.none()
+            else:
+                q = Q()
+                type0s = request.query_params.get("type0").split(" ")
+                for type0 in type0s:
+                    q |= Q(type0=int(type0))
+                queryset = queryset.filter(q)
 
         # type1 검색
         if "type1" in request.query_params:
-            try:
-                type1 = int(request.query_params.get("type1"))
-            except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST, data="type1 is not an integer"
-                )
-            queryset = queryset.filter(type1=type1)
+            if not request.query_params.get("type1"):
+                queryset = queryset.none()
+            else:
+                q = Q()
+                type1s = request.query_params.get("type1").split(" ")
+                for type1 in type1s:
+                    q |= Q(type1=int(type1))
+                queryset = queryset.filter(q)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -160,20 +188,22 @@ class UserCircleViewSet(viewsets.GenericViewSet):
     def list(self, request, circle_id, user_id):
 
         if not (circle := Circle.objects.get_or_none(id=circle_id)):
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
-            )
+                detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
 
         if user_id == "my":
             user = request.user
         elif User.objects.filter(id=user_id):
             user = User.objects.get(id=user_id)
         else:
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "유저가 존재하지 않습니다."},
-            )
+                detail="id: " + user_id + "에 해당하는 유저가 존재하지 않습니다.",
+                code=ErrorCode.USER_NOT_FOUND,
+            ).to_response()
 
         membership = UserCircle_Member.objects.get_or_none(user=user, circle=circle)
         alarm = UserCircle_Alarm.objects.get_or_none(user=user, circle=circle)
@@ -193,20 +223,22 @@ class UserCircleViewSet(viewsets.GenericViewSet):
     def retrieve(self, request, circle_id, user_id, pk):
 
         if not (circle := Circle.objects.get_or_none(id=circle_id)):
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
-            )
+                detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
 
         if user_id == "my":
             user = request.user
         elif User.objects.filter(id=user_id):
             user = User.objects.get(id=user_id)
         else:
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "유저가 존재하지 않습니다."},
-            )
+                detail="id: " + user_id + "에 해당하는 유저가 존재하지 않습니다.",
+                code=ErrorCode.USER_NOT_FOUND,
+            ).to_response()
 
         if pk == "alarm":
             return Response(
@@ -237,20 +269,22 @@ class UserCircleViewSet(viewsets.GenericViewSet):
     def update(self, request, circle_id, user_id, pk):
 
         if not (circle := Circle.objects.get_or_none(id=circle_id)):
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
-            )
+                detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
 
         if user_id == "my":
             user = request.user
         elif User.objects.filter(id=user_id):
             user = User.objects.get(id=user_id)
         else:
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "유저가 존재하지 않습니다."},
-            )
+                detail="id: " + user_id + "에 해당하는 유저가 존재하지 않습니다.",
+                code=ErrorCode.USER_NOT_FOUND,
+            ).to_response()
 
         if pk == "alarm":
             UserCircle_Alarm.objects.get_or_create(user=user, circle=circle)
@@ -286,20 +320,22 @@ class UserCircleViewSet(viewsets.GenericViewSet):
     def delete(self, request, circle_id, user_id, pk):
 
         if not (circle := Circle.objects.get_or_none(id=circle_id)):
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
-            )
+                detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
 
         if user_id == "my":
             user = request.user
         elif User.objects.filter(id=user_id):
             user = User.objects.get(id=user_id)
         else:
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                data={"error": "wrong_id", "detail": "유저가 존재하지 않습니다."},
-            )
+                detail="id: " + user_id + "에 해당하는 유저가 존재하지 않습니다.",
+                code=ErrorCode.USER_NOT_FOUND,
+            ).to_response()
 
         if pk == "alarm":
             if user_circle_alarm := UserCircle_Alarm.objects.get_or_none(

@@ -6,7 +6,7 @@ from common.models import BaseModel
 
 # Create your models here.
 class Hashtag(BaseModel):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
 
 class HashtagCircle(BaseModel):

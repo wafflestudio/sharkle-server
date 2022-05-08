@@ -24,6 +24,12 @@ class CustomUserManager(BaseUserManager):
 
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault(
+            "user_id", f"admin_{extra_fields.get('email').split('@')[0]}"
+        )
+        extra_fields.setdefault(
+            "username", f"admin_{extra_fields.get('email').split('@')[0]}"
+        )
 
         if (
             extra_fields.get("is_staff") is not True
@@ -48,6 +54,12 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
 
 
 class VerificationCode(models.Model):

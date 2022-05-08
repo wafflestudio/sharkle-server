@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from board.BoardPermission import BoardPermission
@@ -173,3 +174,22 @@ class BoardViewSet(viewsets.GenericViewSet):
                 code=ErrorCode.NOT_MANAGER,
             ).to_response()
         return None
+
+
+@api_view(("GET",))
+def get_board_list_by_circle_name(request, circle_name):
+    user = request.user
+    if not Circle.objects.filter(name=circle_name).exists():
+        return ExceptionResponse(
+            status=status.HTTP_404_NOT_FOUND,
+            detail="name: " + circle_name + "에 해당하는 동아리가 존재하지 않습니다.",
+            code=ErrorCode.CIRCLE_NOT_FOUND,
+        ).to_response()
+    circle = Circle.objects.get(name=circle_name)
+    member = UserCirclePermission(user.id, circle.id)
+    if not member.is_member():  # 멤버가 아니면 비공게 게시판 숨기기
+        boards = Board.objects.filter(circle=circle.id, is_private=False)
+        return Response(BoardSerializer(boards, many=True).data)
+    else:  # 멤버면 모든 게시판 공개
+        boards = Board.objects.filter(circle=circle.id)
+        return Response(BoardSerializer(boards, many=True).data)

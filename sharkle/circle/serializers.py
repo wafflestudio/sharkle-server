@@ -1,6 +1,7 @@
 from rest_framework import serializers
+from user.models import User
 
-from .models import Circle, Homepage
+from .models import *
 from hashtag.models import Hashtag, HashtagCircle
 
 
@@ -43,6 +44,31 @@ class HomepageSerializer(serializers.ModelSerializer):
         ]
         # extra_fields = ['problems']
 
+class UserStatus_M(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    alarm = serializers.SerializerMethodField()
+    member = serializers.SerializerMethodField()
+    manager = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserCircle_Member
+        fields = ['id', 'alarm', 'member', 'manager']
+
+    def get_id(self, obj):
+        return obj.user.id
+    def get_alarm(self, obj):
+        return bool(UserCircle_Alarm.objects.get_or_none(user=obj.user, circle=obj.circle))
+    def get_member(self, obj):
+        return bool(UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle))
+    def get_manager(self, obj):
+        return bool(UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle, is_manager=True))
+
+
+class UserStatus_A(UserStatus_M):
+
+    class Meta:
+        model = UserCircle_Alarm
+        fields = ['id', 'alarm', 'member', 'manager']
 
 class CircleViewSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()

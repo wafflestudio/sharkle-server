@@ -184,6 +184,35 @@ class UserCircleViewSet(viewsets.GenericViewSet):
     serializer_class = CircleSerializer
     permission_classes = (permissions.AllowAny,)  # 테스트용 임시
 
+    # GET /circle/{id}/account/
+    def list(self, request, circle_id):
+        if not (circle := Circle.objects.get_or_none(id=circle_id)):
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
+            )
+
+        option = request.query_params.get('option', None)
+
+        objects = dict()
+        objects['manager'] = UserCircle_Member.objects.filter(is_manager=True, circle=circle)
+        objects['member'] = UserCircle_Member.objects.filter(is_manager=False, circle=circle)
+        objects['all_member'] = UserCircle_Member.objects.filter(circle=circle)
+        objects['alarm'] = UserCircle_Alarm.objects.filter(circle=circle)
+
+        if option in ('alarm', ):
+            page = self.paginate_queryset(objects[option])
+            return self.get_paginated_response(UserStatus_A(page, many=True).data)
+
+        if option in ('member', 'manager', 'all_member', ):
+            page = self.paginate_queryset(objects[option])
+            return self.get_paginated_response(UserStatus_M(page, many=True).data)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST, data="pagination fault")
+
+class UserCircleUpdateSet(viewsets.GenericViewSet):
+    serializer_class = CircleSerializer
+    permission_classes = (permissions.AllowAny,)  # 테스트용 임시
     # GET /circle/{id}/account/{id}/
     def list(self, request, circle_id, user_id):
 
@@ -217,7 +246,7 @@ class UserCircleViewSet(viewsets.GenericViewSet):
                 data["membership"] = "관리자"
         data["alarm"] = bool(alarm)
 
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=data)
+        return Response(status=status.HTTP_200_OK, data=data)
 
     # GET /circle/{id}/account/{id}/{name}/
     def retrieve(self, request, circle_id, user_id, pk):

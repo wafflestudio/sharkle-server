@@ -6,8 +6,8 @@ from user.models import User
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ["id", "username", "email", "user_id"]
-    list_display_links = ["id", "username", "email", "user_id"]
-    search_fields = ["id", "username", "email", "user_id"]
+    list_display_links = list_display
+    search_fields = list_display
 
 
 admin.site.register(User, UserAdmin)

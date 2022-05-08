@@ -24,6 +24,12 @@ class CustomUserManager(BaseUserManager):
 
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault(
+            "user_id", f"admin_{extra_fields.get('email').split('@')[0]}"
+        )
+        extra_fields.setdefault(
+            "username", f"admin_{extra_fields.get('email').split('@')[0]}"
+        )
 
         if (
             extra_fields.get("is_staff") is not True

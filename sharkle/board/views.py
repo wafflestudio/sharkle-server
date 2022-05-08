@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from board.BoardPermission import BoardPermission
@@ -177,6 +178,7 @@ class BoardViewSet(viewsets.GenericViewSet):
 
 
 @api_view(("GET",))
+@permission_classes((AllowAny,))
 def get_board_list_by_circle_name(request, circle_name):
     user = request.user
     if not Circle.objects.filter(name=circle_name).exists():
@@ -186,6 +188,10 @@ def get_board_list_by_circle_name(request, circle_name):
             code=ErrorCode.CIRCLE_NOT_FOUND,
         ).to_response()
     circle = Circle.objects.get(name=circle_name)
+    if user.is_anonymous:
+        boards = Board.objects.filter(circle=circle.id, is_private=False)
+        return Response(BoardSimpleSerializer(boards, many=True).data)
+
     member = UserCirclePermission(user.id, circle.id)
     if not member.is_member():  # 멤버가 아니면 비공게 게시판 숨기기
         boards = Board.objects.filter(circle=circle.id, is_private=False)

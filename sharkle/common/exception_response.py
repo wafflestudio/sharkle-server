@@ -16,7 +16,11 @@ class ExceptionResponse:
     def to_response(self):
         return Response(
             status=self.status,
-            data={"status": self.status, "detail": self.message, "code": self.code},
+            data={
+                "status": self.status,
+                "detail": self.detail,
+                "code": self.code.value,
+            },
         )
 
 

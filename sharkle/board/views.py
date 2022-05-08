@@ -4,9 +4,9 @@ from rest_framework.response import Response
 
 from board.BoardPermission import BoardPermission
 from board.models import Board
-from board.serializers import BoardSerializer
+from board.serializers import *
 
-from circle.models import Circle, UserCircle_Member
+from circle.models import Circle
 from circle.permission import UserCirclePermission
 
 # 1. check circle_id existence
@@ -189,7 +189,7 @@ def get_board_list_by_circle_name(request, circle_name):
     member = UserCirclePermission(user.id, circle.id)
     if not member.is_member():  # 멤버가 아니면 비공게 게시판 숨기기
         boards = Board.objects.filter(circle=circle.id, is_private=False)
-        return Response(BoardSerializer(boards, many=True).data)
+        return Response(BoardSimpleSerializer(boards, many=True).data)
     else:  # 멤버면 모든 게시판 공개
         boards = Board.objects.filter(circle=circle.id)
-        return Response(BoardSerializer(boards, many=True).data)
+        return Response(BoardSimpleSerializer(boards, many=True).data)

@@ -10,5 +10,5 @@ class UserCirclePermission:
     def is_member(self):
         return self.member.exists()
 
-    def is_manager(self):
+    def is_manager(self):  # Q. self.member.exists() and self.member.first().is_manager?
         return self.member.first().is_manager

@@ -18,11 +18,6 @@ class UserFactory(DjangoModelFactory):
     email = factory.LazyAttribute(lambda o: "%s@sharkle.org" % o.username)
     password = "1234"
 
-    @classmethod
-    def create(cls, **kwargs):
-        user = User.objects.create_user(**kwargs)
-        return user
-
 
 class CircleFactory(DjangoModelFactory):
     class Meta:

@@ -10,7 +10,7 @@ class HashTagViewSet(viewsets.GenericViewSet):
     serializer_class = HashtagSerializer
     permission_classes = (permissions.AllowAny,)  # 테스트용 임시
 
-    # GET /circle/
+    # GET /hashtag/
     def list(self, request):
         queryset = self.get_queryset()
 

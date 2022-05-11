@@ -13,6 +13,6 @@ class Recruitment(BaseModel):
 
 
 class RecruitmentSchedule(BaseModel):
-    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='recruitment_schedule', null=False)
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='recruitment_schedule', null=True)
     recruitment = models.ForeignKey(Recruitment, on_delete=models.CASCADE, related_name='recruitment_schedule', null=False)
 

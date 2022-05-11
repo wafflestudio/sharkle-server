@@ -8,17 +8,16 @@ from .serializers_recruitment import *
 
 def get_circle_recruitment(circle_id, recruitment_id):
 
-    print(recruitment_id, type(recruitment_id))
     # 존재하지 않는 Circle
     if not (circle := Circle.objects.get_or_none(id=circle_id)):
-        return {"circle": None, "recruitment": None}
+        return None, None
 
     # Recruitment (Default)
     if recruitment_id == "default":
         recruitments = Recruitment.objects.filter(circle=circle)
         # 동아리에 Recuritment가 존재하지 않음
         if not recruitments:
-            return {"circle": circle, "recruitment": None}
+            return circle, None
         recruitment = recruitments.last()
     # Recruitment (id)
     else:
@@ -29,14 +28,14 @@ def get_circle_recruitment(circle_id, recruitment_id):
 def get_error_circle_recruitment(circle_id, recruitment_id):
     circle, recruitment = get_circle_recruitment(circle_id, recruitment_id)
     error = None
+
     if not circle:
         error = ExceptionResponse(
             status=status.HTTP_404_NOT_FOUND,
             detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
             code=ErrorCode.CIRCLE_NOT_FOUND,
         ).to_response()
-
-    if not recruitment:
+    elif not recruitment:
         error = ExceptionResponse(
             status=status.HTTP_404_NOT_FOUND,
             detail="id: "
@@ -88,6 +87,8 @@ class RecruitmentViewSet(viewsets.GenericViewSet):
         if error:
             return error
 
+        print(error, type(error))
+
         return Response(
             status=status.HTTP_200_OK,
             data=RecruitmentViewSerializer(recruitment).data,
@@ -119,28 +120,9 @@ class RecruitmentViewSet(viewsets.GenericViewSet):
     # PUT circle/{id}/recruitment/{default, id}
     def update(self, request, circle_id, pk):
 
-        if not (circle := Circle.objects.get_or_none(id=circle_id)):
-            return ExceptionResponse(
-                status=status.HTTP_404_NOT_FOUND,
-                detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
-                code=ErrorCode.CIRCLE_NOT_FOUND,
-            ).to_response()
-
-        if pk == "default":
-            recruitments = Recruitment.objects.filter(circle=circle)
-            if not recruitments:
-                return ExceptionResponse(
-                    status=status.HTTP_404_NOT_FOUND,
-                    detail="해당 동아리에 Recruitment가 존재하지 않습니다.",
-                    code=ErrorCode.RECRUITMENT_NOT_FOUND,
-                ).to_response()
-            recruitment = recruitments.last()
-        elif not (recruitment := Recruitment.objects.get_or_none(id=pk, circle=circle)):
-            return ExceptionResponse(
-                status=status.HTTP_404_NOT_FOUND,
-                detail="id: " + str(pk) + "에 해당하는 Recruitment가 존재하지 않습니다.",
-                code=ErrorCode.RECRUITMENT_NOT_FOUND,
-            ).to_response()
+        error, circle, recruitment = get_error_circle_recruitment(circle_id, pk)
+        if error:
+            return error
 
         serializer = RecruitmentUpdateSerializer(recruitment, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -152,28 +134,9 @@ class RecruitmentViewSet(viewsets.GenericViewSet):
 
     # DELETE circle/{id}/recruitment/{default, id}
     def destroy(self, request, circle_id, pk):
-        if not (circle := Circle.objects.get_or_none(id=circle_id)):
-            return ExceptionResponse(
-                status=status.HTTP_404_NOT_FOUND,
-                detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
-                code=ErrorCode.CIRCLE_NOT_FOUND,
-            ).to_response()
-
-        if pk == "default":
-            recruitments = Recruitment.objects.filter(circle=circle)
-            if not recruitments:
-                return ExceptionResponse(
-                    status=status.HTTP_404_NOT_FOUND,
-                    detail="해당 동아리에 Recruitment가 존재하지 않습니다.",
-                    code=ErrorCode.RECRUITMENT_NOT_FOUND,
-                ).to_response()
-            recruitment = recruitments.last()
-        elif not (recruitment := Recruitment.objects.get_or_none(id=pk, circle=circle)):
-            return ExceptionResponse(
-                status=status.HTTP_404_NOT_FOUND,
-                detail="id: " + str(pk) + "에 해당하는 Recruitment가 존재하지 않습니다.",
-                code=ErrorCode.RECRUITMENT_NOT_FOUND,
-            ).to_response()
+        error, circle, recruitment = get_error_circle_recruitment(circle_id, pk)
+        if error:
+            return error
 
         recruitment.delete()
 

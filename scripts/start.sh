@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 UWSGI_INI=sharkle-server_uwsgi.ini
 VIRTUAL_ENV=sharkle-venv

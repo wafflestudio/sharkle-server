@@ -9,16 +9,21 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
 from .serializers import UserViewSerializer
 from .models import User
+from common.exception_response import ExceptionResponse, ErrorCode
+
 
 class UserViewSet(viewsets.GenericViewSet):
     permission_classes = (permissions.IsAuthenticated,)  # 테스트용 임시
 
     # GET /account/{id}/
     def retrieve(self, request, pk):
-        if pk == 'my':
-            return Response(data=UserViewSerializer(request.data).data, status=status.HTTP_200_OK)
+        if pk == "my":
+            return Response(
+                data=UserViewSerializer(request.data).data, status=status.HTTP_200_OK
+            )
         user = User.objects.get(id=pk)
         return Response(data=UserViewSerializer(user).data, status=status.HTTP_200_OK)
+
 
 class PingPongView(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -37,10 +42,11 @@ class SignUpView(APIView):
         try:
             user = serializer.save()
         except IntegrityError:
-            return Response(
+            return ExceptionResponse(
                 status=status.HTTP_409_CONFLICT,
-                data={"detail": "예상하지 못한 데이터베이스 에러가 발생했습니다."},
-            )
+                detail="예상하지 못한 데이터베이스 에러가 발생했습니다.",
+                code=ErrorCode.DATABASE_ERROR,
+            ).to_response()
 
         refresh_token = RefreshToken.for_user(user)
         data = {

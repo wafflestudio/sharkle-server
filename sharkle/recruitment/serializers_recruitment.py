@@ -4,33 +4,43 @@ from rest_framework import serializers, status
 from .models import *
 from django.core.exceptions import ValidationError, PermissionDenied
 from common.custom_exception import CustomException
+from schedule.serializers import ScheduleViewSerializer
+
+def d_day_calculator(recruitment):
+    schedules = RecruitmentSchedule.objects.filter(recruitment=recruitment, d_day=True)
+    schedules_id = (i.schedule.id for i in schedules)
+    schedules = Schedule.objects.filter(id__in=schedules_id).order_by("end")
+
+    for i in schedules:
+        if i.end.timestamp() - datetime.datetime.now().timestamp() > 0:
+            return i
+    return None
 
 class RecruitmentViewSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     circle_id = serializers.IntegerField()
     introduction = serializers.CharField()
     d_day = serializers.SerializerMethodField()
+    d_day_detail = serializers.SerializerMethodField()
     class Meta:
         model = Recruitment
-        fields = ['id', 'circle_id', 'introduction', 'd_day']
+        fields = ['id', 'circle_id', 'introduction', 'd_day', 'd_day_detail']
 
     def get_circle_id(self, instance):
         return instance.circle.id
 
     def get_d_day(self, instance):
-        schedules = RecruitmentSchedule.objects.filter(recruitment=instance, d_day=True)
-        schedules_id = (i.schedule.id for i in schedules)
-        schedules = Schedule.objects.filter(id__in=schedules_id).order_by("end")
+        d_day = d_day_calculator(instance)
+        if not d_day:
+            return None
+        return int((d_day.end.timestamp() - datetime.datetime.now().timestamp()) / 3600 / 24)
 
-        for i in schedules:
-            if i.end.timestamp() - datetime.datetime.now().timestamp() > 0:
-                dict = {}
-                dict['id'] = i.id
-                dict['day'] = int((i.end.timestamp() - datetime.datetime.now().timestamp()) / 3600 / 24)
-                dict['schedule'] = i.end
-                return dict
+    def get_d_day_detail(self, instance):
+        d_day = d_day_calculator(instance)
+        if not d_day:
+            return None
+        return ScheduleViewSerializer(d_day).data
 
-        return None
 
 
 

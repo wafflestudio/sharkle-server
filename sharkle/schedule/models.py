@@ -7,8 +7,7 @@ from django.utils import timezone
 class Schedule(BaseModel):
     circle = models.ForeignKey(Circle, on_delete=models.CASCADE, related_name='schedule', null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
-    start = models.DateTimeField()
-    end = models.DateTimeField(null=True)
+    start = models.DateTimeField(null=True)
+    end = models.DateTimeField()
     location = models.CharField(max_length=100, null=False, blank=True)
     highlight = models.BooleanField(default=False)
-    d_day = models.BooleanField(default=False)

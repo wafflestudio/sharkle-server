@@ -13,12 +13,11 @@ class ScheduleViewSerializer(serializers.ModelSerializer):
     end = serializers.DateTimeField()
     location = serializers.CharField()
     highlight = serializers.BooleanField()
-    d_day = serializers.BooleanField()
     is_recruitment = serializers.SerializerMethodField()
 
     class Meta:
         model = Schedule
-        fields = ['id', 'circle_id', 'name', 'start', 'end', 'location', 'highlight', 'd_day', 'is_recruitment',]
+        fields = ['id', 'circle_id', 'name', 'start', 'end', 'location', 'highlight', 'is_recruitment',]
 
     def get_circle_id(self, instance):
         return instance.circle.id
@@ -29,15 +28,14 @@ class ScheduleViewSerializer(serializers.ModelSerializer):
 class ScheduleSerializer(serializers.ModelSerializer):
     circle = serializers.IntegerField()
     name = serializers.CharField(max_length=100, allow_null=False, allow_blank=True)
-    start = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-    end = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
+    start = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
+    end = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     location = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
     highlight = serializers.BooleanField(required=False)
-    d_day = serializers.BooleanField(required=False)
 
     class Meta:
         model = Schedule
-        fields = ['circle', 'name', 'start', 'end', 'location', 'highlight', 'd_day', ]
+        fields = ['circle', 'name', 'start', 'end', 'location', 'highlight', ]
 
     def validate(self, data):
         if 'start' in data and 'end' in data:
@@ -53,15 +51,14 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
 class ScheduleUpdateSerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
-    start = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
-    end = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
+    start = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
+    end = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
     location = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
     highlight = serializers.BooleanField(required=False)
-    d_day = serializers.BooleanField(required=False)
 
     class Meta:
         model = Schedule
-        fields = ['name', 'start', 'end', 'location', 'highlight', 'd_day',]
+        fields = ['name', 'start', 'end', 'location', 'highlight',]
 
     def update(self, instance, validated_data):
 

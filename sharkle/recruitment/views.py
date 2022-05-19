@@ -202,7 +202,7 @@ class RecruitmentScheduleViewSet(viewsets.GenericViewSet):
         if error:
             return error
 
-        if not (schedule := RecruitmentSchedule.objects.get_or_none(id=pk, recruitment=recruitment)):
+        if not (schedule := RecruitmentSchedule.objects.get_or_none(schedule__id=pk, recruitment=recruitment)):
             return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
                 detail="Schedule이 존재하지 않습니다.",
@@ -225,7 +225,7 @@ class RecruitmentScheduleViewSet(viewsets.GenericViewSet):
         if error:
             return error
 
-        if not (recruitSchedule := RecruitmentSchedule.objects.get_or_none(id=pk, recruitment=recruitment)):
+        if not (recruitSchedule := RecruitmentSchedule.objects.get_or_none(schedule__id=pk, recruitment=recruitment)):
             return ExceptionResponse(
                 status=status.HTTP_404_NOT_FOUND,
                 detail="Schedule이 존재하지 않습니다.",

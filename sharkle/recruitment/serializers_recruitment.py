@@ -9,26 +9,29 @@ class RecruitmentViewSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     circle_id = serializers.IntegerField()
     introduction = serializers.CharField()
-    recruit_schedule = serializers.SerializerMethodField()
+    d_day = serializers.SerializerMethodField()
     class Meta:
         model = Recruitment
-        fields = ['id', 'circle_id', 'introduction', 'recruit_schedule']
+        fields = ['id', 'circle_id', 'introduction', 'd_day']
 
     def get_circle_id(self, instance):
         return instance.circle.id
 
-    def get_recruit_schedule(self, instance):
+    def get_d_day(self, instance):
         schedules = RecruitmentSchedule.objects.filter(recruitment=instance, d_day=True)
         schedules_id = (i.schedule.id for i in schedules)
         schedules = Schedule.objects.filter(id__in=schedules_id).order_by("end")
 
-        now = datetime.datetime.now
-
         for i in schedules:
             if i.end.timestamp() - datetime.datetime.now().timestamp() > 0:
-                return i.end
+                dict = {}
+                dict['id'] = i.id
+                dict['day'] = int((i.end.timestamp() - datetime.datetime.now().timestamp()) / 3600 / 24)
+                dict['schedule'] = i.end
+                return dict
 
         return None
+
 
 
 

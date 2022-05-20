@@ -171,6 +171,8 @@ class CircleSerializer(serializers.ModelSerializer):
 
         tags = circle.tag.split(" ")
         for tag in tags:
+            if tag == "":
+                continue
             if not (hashtag := Hashtag.objects.get_or_none(name=tag)):
                 hashtag = Hashtag.objects.create(name=tag)
             if not (
@@ -251,15 +253,14 @@ class CircleUpdateSerializer(serializers.ModelSerializer):
             instance.tag = validated_data.pop("tag")
             tags = list(set(instance.tag.split(" ")))
 
-            hashtags = [Hashtag.objects.get_or_create(name=tag)[0] for tag in tags]
+            hashtags = []
+            for tag in tags:
+                if tag != "":
+                    hashtags.append(Hashtag.objects.get_or_create(name=tag)[0])
 
-            HashtagCircle.objects.filter(circle=instance).exclude(
-                hashtag__in=hashtags
-            ).delete()
+            HashtagCircle.objects.filter(circle=instance).exclude(hashtag__in=hashtags).delete()
 
             for hashtag in hashtags:
-                hashtag_circle = HashtagCircle.objects.get_or_create(
-                    circle=instance, hashtag=hashtag
-                )
+                hashtag_circle = HashtagCircle.objects.get_or_create(circle=instance, hashtag=hashtag)
 
         return super().update(instance, validated_data)

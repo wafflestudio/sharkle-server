@@ -6,27 +6,17 @@ from recruitment.models import RecruitmentSchedule
 
 
 class ScheduleViewSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    circle_id = serializers.SerializerMethodField()
-    name = serializers.CharField()
-    start = serializers.DateTimeField()
-    end = serializers.DateTimeField()
-    location = serializers.CharField()
-    highlight = serializers.BooleanField()
     is_recruitment = serializers.SerializerMethodField()
 
     class Meta:
         model = Schedule
-        fields = ['id', 'circle_id', 'name', 'start', 'end', 'location', 'highlight', 'is_recruitment',]
+        fields = ['id', 'circle', 'name', 'start', 'end', 'location', 'highlight', 'is_recruitment',]
 
-    def get_circle_id(self, instance):
-        return instance.circle.id
     def get_is_recruitment(self, instance):
         return bool(RecruitmentSchedule.objects.get_or_none(schedule=instance))
 
 
 class ScheduleSerializer(serializers.ModelSerializer):
-    circle = serializers.IntegerField()
     name = serializers.CharField(max_length=100, allow_null=False, allow_blank=True)
     start = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
     end = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
@@ -44,15 +34,11 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
         return super().validate(data)
 
-    def create(self, validated_data):
-        validated_data['circle'] = Circle.objects.get_or_none(id=validated_data['circle'])
-
-        return super().create(validated_data)
 
 class ScheduleUpdateSerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
     start = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
-    end = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
+    end = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
     location = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
     highlight = serializers.BooleanField(required=False)
 

@@ -19,8 +19,8 @@ class RecruitScheduleViewSerializer(serializers.ModelSerializer):
         model = Schedule
         fields = ['id', 'circle_id', 'recruitment_id', 'name', 'start', 'end', 'location', 'highlight', 'd_day']
 
-    def get_id(self, instnace):
-        return instnace.schedule.id
+    def get_id(self, instance):
+        return instance.schedule.id
     def get_recruitment_id(self, instance):
         return instance.recruitment.id
     def get_circle_id(self, instance):
@@ -61,8 +61,6 @@ class RecruitScheduleSerializer(serializers.ModelSerializer):
 
         recruitment = validated_data['recruitment']
         recruitment = Recruitment.objects.get(id=recruitment)
-
-
 
         validated_data['circle'] = recruitment.circle.id
 

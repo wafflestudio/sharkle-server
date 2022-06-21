@@ -44,6 +44,7 @@ class HomepageSerializer(serializers.ModelSerializer):
         ]
         # extra_fields = ['problems']
 
+
 class UserStatus_M(serializers.ModelSerializer):
     id = serializers.IntegerField()
     alarm = serializers.SerializerMethodField()
@@ -52,23 +53,34 @@ class UserStatus_M(serializers.ModelSerializer):
 
     class Meta:
         model = UserCircle_Member
-        fields = ['id', 'alarm', 'member', 'manager']
+        fields = ["id", "alarm", "member", "manager"]
 
     def get_id(self, obj):
         return obj.user.id
+
     def get_alarm(self, obj):
-        return bool(UserCircle_Alarm.objects.get_or_none(user=obj.user, circle=obj.circle))
+        return bool(
+            UserCircle_Alarm.objects.get_or_none(user=obj.user, circle=obj.circle)
+        )
+
     def get_member(self, obj):
-        return bool(UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle))
+        return bool(
+            UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle)
+        )
+
     def get_manager(self, obj):
-        return bool(UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle, is_manager=True))
+        return bool(
+            UserCircle_Member.objects.get_or_none(
+                user=obj.user, circle=obj.circle, is_manager=True
+            )
+        )
 
 
 class UserStatus_A(UserStatus_M):
-
     class Meta:
         model = UserCircle_Alarm
-        fields = ['id', 'alarm', 'member', 'manager']
+        fields = ["id", "alarm", "member", "manager"]
+
 
 class CircleViewSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
@@ -263,3 +275,22 @@ class CircleUpdateSerializer(serializers.ModelSerializer):
                 )
 
         return super().update(instance, validated_data)
+
+
+class CircleIntroSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=100, required=False)
+    bio = serializers.CharField(
+        max_length=300, allow_null=False, allow_blank=True, required=False
+    )
+    introduction = serializers.CharField(
+        max_length=5000, allow_null=True, allow_blank=True, required=False
+    )
+
+    class Meta:
+        model = Circle
+        fields = [
+            "id",
+            "name",
+            "bio",
+            "introduction",
+        ]

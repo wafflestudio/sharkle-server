@@ -417,3 +417,36 @@ class UserCircleUpdateSet(viewsets.GenericViewSet):
                 ),
             },
         )
+
+
+class IntroViewSet(viewsets.ViewSet):
+    serializer_class = CircleSerializer
+    permission_classes = (permissions.AllowAny,)  # 테스트용 임시
+
+    def retrieve(self, request, circle_id):
+        if not (circle := Circle.objects.get_or_none(id=circle_id)):
+            return ExceptionResponse(
+                status=status.HTTP_404_NOT_FOUND,
+                detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
+
+        return Response(
+            status=status.HTTP_200_OK, data=CircleIntroSerializer(circle).data
+        )
+
+    def update(self, request, circle_id):
+        if not (circle := Circle.objects.get_or_none(id=circle_id)):
+            return ExceptionResponse(
+                status=status.HTTP_404_NOT_FOUND,
+                detail="id: " + str(circle_id) + "에 해당하는 동아리가 존재하지 않습니다.",
+                code=ErrorCode.CIRCLE_NOT_FOUND,
+            ).to_response()
+
+        serializer = CircleIntroSerializer(circle, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.update(circle, serializer.validated_data)
+
+        return Response(
+            status=status.HTTP_200_OK, data=CircleIntroSerializer(circle).data
+        )

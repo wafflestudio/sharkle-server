@@ -40,7 +40,7 @@ class Circle(BaseModel):
         choices=CircleType1.choices, default=CircleType1.기타
     )
 
-    name = models.CharField(max_length=100, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False, blank=False, unique=True)
     bio = models.CharField(max_length=300, null=False, blank=True)
     homepage = models.ForeignKey(Homepage, on_delete=models.SET_NULL, null=True)
 

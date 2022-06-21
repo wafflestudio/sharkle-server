@@ -7,6 +7,10 @@ from .models import *
 from django.db.models import Q
 from user.models import User
 
+from board.serializers import BoardSerializer
+
+from board.models import Board
+
 
 class HomepageViewSet(viewsets.GenericViewSet):
     serializer_class = HomepageSerializer
@@ -35,7 +39,10 @@ class CircleViewSet(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         circle = serializer.save()
         # print(circle)
-
+        qna_board = Board(circle=circle, name="QnA", is_private=False)
+        qna_board.save()
+        comm_board = Board(circle=circle, name="Community", is_private=True)
+        comm_board.save()
         return Response(
             status=status.HTTP_201_CREATED, data=CircleViewSerializer(circle).data
         )
@@ -192,23 +199,32 @@ class UserCircleViewSet(viewsets.GenericViewSet):
                 data={"error": "wrong_id", "detail": "동아리가 존재하지 않습니다."},
             )
 
-        option = request.query_params.get('option', None)
+        option = request.query_params.get("option", None)
 
         objects = dict()
-        objects['manager'] = UserCircle_Member.objects.filter(is_manager=True, circle=circle)
-        objects['member'] = UserCircle_Member.objects.filter(is_manager=False, circle=circle)
-        objects['all_member'] = UserCircle_Member.objects.filter(circle=circle)
-        objects['alarm'] = UserCircle_Alarm.objects.filter(circle=circle)
+        objects["manager"] = UserCircle_Member.objects.filter(
+            is_manager=True, circle=circle
+        )
+        objects["member"] = UserCircle_Member.objects.filter(
+            is_manager=False, circle=circle
+        )
+        objects["all_member"] = UserCircle_Member.objects.filter(circle=circle)
+        objects["alarm"] = UserCircle_Alarm.objects.filter(circle=circle)
 
-        if option in ('alarm', ):
+        if option in ("alarm",):
             page = self.paginate_queryset(objects[option])
             return self.get_paginated_response(UserStatus_A(page, many=True).data)
 
-        if option in ('member', 'manager', 'all_member', ):
+        if option in (
+            "member",
+            "manager",
+            "all_member",
+        ):
             page = self.paginate_queryset(objects[option])
             return self.get_paginated_response(UserStatus_M(page, many=True).data)
 
         return Response(status=status.HTTP_400_BAD_REQUEST, data="pagination fault")
+
 
 class UserCircleUpdateSet(viewsets.GenericViewSet):
     serializer_class = CircleSerializer

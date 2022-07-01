@@ -175,7 +175,7 @@ class RecruitmentScheduleViewSet(viewsets.GenericViewSet):
         if error:
             return error
 
-        error, recruitment = find_recruitment(pk, circle)
+        error, recruitment = find_recruitment(recruitment_id, circle)
         if error:
             return error
 

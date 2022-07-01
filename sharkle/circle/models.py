@@ -53,7 +53,7 @@ class Circle(BaseModel):
         관리자 = 2, "관리자"  # 관리자 이상의 유저 초대 권한 가짐
 
     make_new_member = models.PositiveSmallIntegerField(
-        choices=CircleType1.choices, default=MakeNewMember.회원
+        choices=MakeNewMember.choices, default=MakeNewMember.회원
     )
 
     def __str__(self):

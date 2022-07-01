@@ -4,6 +4,7 @@ from user.models import User
 from .models import *
 from hashtag.models import Hashtag, HashtagCircle
 from .functions import user_membership, update_hashtag
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class HomepageSerializer(serializers.ModelSerializer):
@@ -61,7 +62,6 @@ class UserStatus_A(UserStatus_M):
     class Meta:
         model = UserCircle_Alarm
         fields = ["id", "alarm", "membership", "membership_code"]
-
 
 class CircleViewSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
@@ -130,6 +130,12 @@ class CircleSerializer(serializers.ModelSerializer):
             "introduction",
             "tag",
         ] + HomepageSerializer.Meta.fields
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Circle.objects.all(),
+                fields=['name']
+            )
+        ]
         # extra_fields = ['problems']
 
     def create(self, validated_data):
@@ -150,7 +156,7 @@ class CircleSerializer(serializers.ModelSerializer):
 
         return circle
 
-class CircleUpdateSerializer(serializers.ModelSerializer):
+class CircleUpdateSerializer(CircleSerializer):
     name = serializers.CharField(max_length=100, required=False)
     bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
     homepage = serializers.CharField(max_length=500, allow_null=True, required=False)

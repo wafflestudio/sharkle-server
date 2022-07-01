@@ -5,8 +5,7 @@ from common.exception_response import ExceptionResponse, ErrorCode
 from .serializers import *
 from .models import *
 from django.db.models import Q
-from user.models import User
-from .functions import find_circle, find_user, is_string_integer, user_status
+from .functions import find_circle, find_user, is_string_integer, user_status, d_day_calculator_circle_sort
 
 from board.serializers import BoardSerializer
 
@@ -146,6 +145,11 @@ class CircleViewSet(viewsets.GenericViewSet):
                 for type1 in type1s:
                     q |= Q(type1=int(type1))
                 queryset = queryset.filter(q)
+
+        # d_day sorting
+        if "d_day" in request.query_params:
+            if request.query_params.get("d_day") == "true":
+                queryset = sorted(queryset, key=d_day_calculator_circle_sort)
 
         page = self.paginate_queryset(queryset)
         if page is not None:

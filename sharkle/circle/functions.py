@@ -8,6 +8,18 @@ from enum import Enum
 from recruitment.models import Recruitment, RecruitmentSchedule
 from schedule.models import Schedule
 import datetime
+import math
+
+def d_day_calculator_circle_sort(circle):
+    recruitment = Recruitment.objects.get_or_none(circle=circle)
+    if recruitment is None:
+        return math.inf
+
+    d_day_schedule, d_day_days = d_day_calculator(recruitment)
+    if d_day_days == "ERROR":
+        return math.inf
+
+    return d_day_days
 
 def d_day_calculator(recruitment):
     schedules = RecruitmentSchedule.objects.filter(recruitment=recruitment, d_day=True)

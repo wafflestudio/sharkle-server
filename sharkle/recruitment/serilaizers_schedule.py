@@ -73,7 +73,7 @@ class RecruitScheduleSerializer(serializers.ModelSerializer):
             return RecruitmentSchedule.objects.create(recruitment=recruitment, schedule=schedule, d_day=d_day)
         return RecruitmentSchedule.objects.create(recruitment=recruitment, schedule=schedule)
 
-class RecruitScheduleUpdateSerializer(serializers.ModelSerializer):
+class RecruitScheduleUpdateSerializer(RecruitScheduleSerializer):
     name = serializers.CharField(max_length=100, allow_null=False, allow_blank=True, required=False)
     start = serializers.DateTimeField(required=False, format="%Y-%m-%d %H:%M:%S")
     end = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
@@ -84,14 +84,6 @@ class RecruitScheduleUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecruitmentSchedule
         fields = ['name', 'start', 'end', 'location', 'highlight', 'd_day']
-
-    def validate(self, data):
-        error = {}
-        if 'start' in data and 'end' in data:
-            if data['start'] > data['end']:
-                raise ValidationError({'end': "Start should be smaller then End"})
-
-        return super().validate(data)
 
     def update(self, instance, validated_data):
 

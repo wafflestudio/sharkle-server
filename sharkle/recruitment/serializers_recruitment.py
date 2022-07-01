@@ -35,10 +35,6 @@ class RecruitmentViewSerializer(serializers.ModelSerializer):
             return None
         return ScheduleViewSerializer(d_day).data
 
-
-
-
-
 class RecruitmentUpdateSerializer(serializers.ModelSerializer):
     introduction = serializers.CharField(required=False, max_length=5000, allow_null=False, allow_blank=True)
     title = serializers.CharField(max_length=500, allow_null=False, allow_blank=True, required=False)
@@ -46,20 +42,6 @@ class RecruitmentUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recruitment
         fields = ['introduction', 'title']
-
-    def validate(self, data):
-        if 'circle' in data:
-            circle = int(data['circle'])
-            if not (circle := Circle.objects.get_or_none(id=circle)):
-                raise CustomException("존재하지 않는 Circle입니다", status.HTTP_404_NOT_FOUND)
-
-        return super().validate(data)
-
-    def update(self, instance, validated_data):
-        if 'circle' in validated_data:
-            validated_data['circle'] = Circle.objects.get_or_none(id=validated_data['circle'])
-        #print(validated_data)
-        return super().update(instance, validated_data)
 
 class RecruitmentSerializer(serializers.ModelSerializer):
     class Meta:

@@ -4,6 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 from .models import *
 from user.models import User
 from hashtag.models import Hashtag, HashtagCircle
+from enum import Enum
 
 def update_hashtag(circle, hashtag_string):
 
@@ -65,17 +66,22 @@ def find_user(user_id, my):
 
     return None, user
 
+class UserCircleCode(Enum):
+    일반 = 0
+    회원 = 1
+    관리자 = 2
+
 def user_membership(circle, user):
     if isinstance(user, AnonymousUser):
-        return "Anonymous", 0
+        return "Anonymous", UserCircleCode.일반
 
-    membership = ("일반", 0)
+    membership = ("일반", UserCircleCode.일반)
     user_circle_member = UserCircle_Member.objects.get_or_none(user=user, circle=circle)
 
     if user_circle_member:
-        membership = ("회원", 1)
+        membership = ("회원", UserCircleCode.회원)
         if user_circle_member.is_manager:
-            membership = ("관리자", 2)
+            membership = ("관리자", UserCircleCode.관리자)
 
     return membership
 

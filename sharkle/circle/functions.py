@@ -7,6 +7,20 @@ from hashtag.models import Hashtag, HashtagCircle
 from enum import Enum
 from recruitment.models import Recruitment, RecruitmentSchedule
 from schedule.models import Schedule
+import datetime
+
+def d_day_calculator(recruitment):
+    schedules = RecruitmentSchedule.objects.filter(recruitment=recruitment, d_day=True)
+    schedules_id = (i.schedule.id for i in schedules)
+    schedules = Schedule.objects.filter(id__in=schedules_id).order_by("end")
+
+    for schedule in schedules:
+        timestamp = schedule.end.timestamp() - datetime.datetime.now().timestamp()
+        date = schedule.end.date() - datetime.date.today()
+
+        if timestamp > 0:
+            return schedule, date.days
+    return None, None
 
 def update_hashtag(circle, hashtag_string):
 

@@ -1,20 +1,7 @@
-import datetime
-
-from rest_framework import serializers, status
+from rest_framework import serializers
 from .models import *
-from django.core.exceptions import ValidationError, PermissionDenied
-from common.custom_exception import CustomException
 from schedule.serializers import ScheduleViewSerializer
-
-def d_day_calculator(recruitment):
-    schedules = RecruitmentSchedule.objects.filter(recruitment=recruitment, d_day=True)
-    schedules_id = (i.schedule.id for i in schedules)
-    schedules = Schedule.objects.filter(id__in=schedules_id).order_by("end")
-
-    for i in schedules:
-        if i.end.timestamp() - datetime.datetime.now().timestamp() > 0:
-            return i
-    return None
+from circle.functions import d_day_calculator
 
 class RecruitmentViewSerializer(serializers.ModelSerializer):
     d_day = serializers.SerializerMethodField()
@@ -24,16 +11,16 @@ class RecruitmentViewSerializer(serializers.ModelSerializer):
         fields = ['id', 'circle', 'title', 'introduction', 'd_day', 'd_day_detail']
 
     def get_d_day(self, instance):
-        d_day = d_day_calculator(instance)
-        if not d_day:
+        d_day_schedule, d_day_days = d_day_calculator(instance)
+        if not d_day_days:
             return None
-        return int((d_day.end.timestamp() - datetime.datetime.now().timestamp()) / 3600 / 24)
+        return d_day_days
 
     def get_d_day_detail(self, instance):
-        d_day = d_day_calculator(instance)
-        if not d_day:
+        d_day_schedule, d_day_days = d_day_calculator(instance)
+        if not d_day_schedule:
             return None
-        return ScheduleViewSerializer(d_day).data
+        return ScheduleViewSerializer(d_day_schedule).data
 
 class RecruitmentUpdateSerializer(serializers.ModelSerializer):
     introduction = serializers.CharField(required=False, max_length=5000, allow_null=False, allow_blank=True)

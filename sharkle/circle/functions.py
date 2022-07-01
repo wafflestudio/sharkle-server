@@ -5,6 +5,8 @@ from .models import *
 from user.models import User
 from hashtag.models import Hashtag, HashtagCircle
 from enum import Enum
+from recruitment.models import Recruitment, RecruitmentSchedule
+from schedule.models import Schedule
 
 def update_hashtag(circle, hashtag_string):
 
@@ -30,6 +32,47 @@ def is_string_integer(str):
         except ValueError:
             return False
     return True
+
+
+def find_recruitment(recruitment_id, circle):
+    if recruitment_id == "default":
+        recruitments = Recruitment.objects.filter(circle=circle)
+        # 동아리에 Recuritment가 존재하지 않음
+        if not recruitments:
+            return ExceptionResponse(
+                status=status.HTTP_404_NOT_FOUND,
+                detail="id: "
+                   + str(recruitment_id)
+                   + "에 해당하는 Recruitment가 존재하지 않습니다.",
+                code=ErrorCode.RECRUITMENT_NOT_FOUND,
+            ).to_response(), None
+        recruitment = recruitments.last()
+    else:
+        recruitment = Recruitment.objects.get_or_none(id=recruitment_id, circle=circle)
+    return None, recruitment
+
+
+def find_recruitment_schedule(schedule_id, recruitment):
+    if not (recruitSchedule := RecruitmentSchedule.objects.get_or_none(schedule__id=schedule_id, recruitment=recruitment)):
+        return ExceptionResponse(
+            status=status.HTTP_404_NOT_FOUND,
+            detail="Schedule이 존재하지 않습니다.",
+            code=ErrorCode.SCHEDULE_NOT_FOUND,
+        ).to_response(), None
+
+    return None, recruitSchedule
+
+
+def find_schedule(schedule_id, circle):
+    if not (schedule := Schedule.objects.get_or_none(id=schedule_id, circle=circle)):
+        return ExceptionResponse(
+            status=status.HTTP_404_NOT_FOUND,
+            detail="id: " + str(schedule_id) + "에 해당하는 Schedule가 존재하지 않습니다.",
+            code=ErrorCode.RECRUITMENT_NOT_FOUND,
+        ).to_response(), None
+
+    return None, schedule
+
 
 def find_circle(circle_id):
     # 존재하지 않는 동아리

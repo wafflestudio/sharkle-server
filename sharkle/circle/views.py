@@ -65,7 +65,7 @@ class CircleViewSet(viewsets.GenericViewSet):
         if error:
             return error
 
-        serializer = CircleSerializer(circle, data=request.data)
+        serializer = CircleUpdateSerializer(circle, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.update(circle, serializer.validated_data)
 

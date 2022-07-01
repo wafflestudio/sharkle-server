@@ -12,13 +12,13 @@ class RecruitmentViewSerializer(serializers.ModelSerializer):
 
     def get_d_day(self, instance):
         d_day_schedule, d_day_days = d_day_calculator(instance)
-        if not d_day_days:
+        if d_day_days == "ERROR":
             return None
         return d_day_days
 
     def get_d_day_detail(self, instance):
         d_day_schedule, d_day_days = d_day_calculator(instance)
-        if not d_day_schedule:
+        if d_day_schedule == "ERROR":
             return None
         return ScheduleViewSerializer(d_day_schedule).data
 

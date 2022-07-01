@@ -20,7 +20,7 @@ def d_day_calculator(recruitment):
 
         if timestamp > 0:
             return schedule, date.days
-    return None, None
+    return "ERROR", "ERROR"
 
 def update_hashtag(circle, hashtag_string):
 

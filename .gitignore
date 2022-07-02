@@ -134,7 +134,6 @@ dmypy.json
 .idea/
 
 # Migration file
-**/migrations/**
-!**/migrations
-!**/migrations/__init__.py
+**/migrations/*
+
 

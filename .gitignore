@@ -133,4 +133,7 @@ dmypy.json
 # for specific options https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 .idea/
 
+# Migration file
+./*/migrations/*.py
+
 

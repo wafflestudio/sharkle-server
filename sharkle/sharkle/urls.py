@@ -25,7 +25,11 @@ urlpatterns = [
     path("api/v1/", include("board.urls")),
     path("api/v1/", include("article.urls")),
     path("api/v1/", include("comment.urls")),
-    path('api/v1/', include('recruitment.urls'))
+    path('api/v1/', include('recruitment.urls')),
+    path('api/v1/', include('schedule.urls')),
+
+
+
 ]
 
 if settings.DEBUG:

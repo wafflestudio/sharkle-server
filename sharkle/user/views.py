@@ -14,8 +14,8 @@ from django.contrib.auth.models import AnonymousUser
 
 
 class UserViewSet(viewsets.GenericViewSet):
-    #permission_classes = (permissions.IsAuthenticated,)  # 테스트용 임시
-    permission_classes = (permissions.AllowAny, )
+    # permission_classes = (permissions.IsAuthenticated,)  # 테스트용 임시
+    permission_classes = (permissions.AllowAny,)
 
     # GET /account/
     def list(self, request):
@@ -62,7 +62,7 @@ class UserViewSet(viewsets.GenericViewSet):
             if "user_id" in query_params:
                 user_id = query_params.get("user_id")
                 try:
-                    user = User.objects.get(user_id = user_id)
+                    user = User.objects.get(user_id=user_id)
                 except Exception as e:
                     user = None
             if "email" in query_params:
@@ -124,3 +124,10 @@ class SignUpView(APIView):
             "access": str(refresh_token.access_token),
         }
         return Response(data=data, status=status.HTTP_201_CREATED)
+
+
+# class FindPasswordView(APIView):
+#     permission_classes = (permissions.AllowAny,)
+#
+#     def post(self, request):
+#         user

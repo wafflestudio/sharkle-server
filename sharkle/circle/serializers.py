@@ -93,8 +93,8 @@ class CircleViewSerializer(serializers.ModelSerializer):
             "tag",
             "tag_integer",
             "homepage",
-            'd_day',
-            'd_day_detail',
+            "d_day",
+            "d_day_detail",
         ]
         # extra_fields = ['problems']
 
@@ -130,37 +130,27 @@ class CircleSerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=100)
     bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
 
-    homepage = serializers.CharField(max_length=500, allow_null=True, required=False)
-    facebook = serializers.CharField(max_length=500, allow_null=True, required=False)
-    instagram = serializers.CharField(max_length=500, allow_null=True, required=False)
-    twitter = serializers.CharField(max_length=500, allow_null=True, required=False)
-    youtube = serializers.CharField(max_length=500, allow_null=True, required=False)
-    tiktok = serializers.CharField(max_length=500, allow_null=True, required=False)
-    band = serializers.CharField(max_length=500, allow_null=True, required=False)
-
     introduction = serializers.CharField(
         max_length=5000, allow_null=True, allow_blank=True, required=False
     )
     tag = serializers.CharField(
-        max_length=500, allow_null=False, allow_blank=True, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
+    homepage = HomepageSerializer(read_only=True, many=False)
 
     class Meta:
         model = Circle
         fields = [
-                     "type0",
-                     "type1",
-                     "name",
-                     "bio",
-                     "introduction",
-                     "tag",
-                 ] + HomepageSerializer.Meta.fields
-        # extra_fields = ['problems']
+            "type0",
+            "type1",
+            "name",
+            "bio",
+            "introduction",
+            "tag",
+            "homepage",
+        ]
         validators = [
-            UniqueTogetherValidator(
-                queryset=Circle.objects.all(),
-                fields=['name']
-            )
+            UniqueTogetherValidator(queryset=Circle.objects.all(), fields=["name"])
         ]
 
     def create(self, validated_data):
@@ -192,8 +182,12 @@ class CircleUpdateSerializer(CircleSerializer):
     youtube = serializers.CharField(max_length=500, allow_null=True, required=False)
     tiktok = serializers.CharField(max_length=500, allow_null=True, required=False)
     band = serializers.CharField(max_length=500, allow_null=True, required=False)
-    introduction = serializers.CharField(max_length=5000, allow_null=True, allow_blank=True, required=False)
-    tag = serializers.CharField(max_length=500, allow_null=False, allow_blank=True, required=False)
+    introduction = serializers.CharField(
+        max_length=5000, allow_null=True, allow_blank=True, required=False
+    )
+    tag = serializers.CharField(
+        max_length=500, allow_null=False, allow_blank=True, required=False
+    )
 
     def update(self, instance, validated_data):
         data = {}

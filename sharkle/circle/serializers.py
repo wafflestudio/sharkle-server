@@ -3,32 +3,21 @@ from user.models import User
 
 from .models import *
 from hashtag.models import Hashtag, HashtagCircle
+from .functions import user_membership, update_hashtag, d_day_calculator
+from rest_framework.validators import UniqueTogetherValidator
+from recruitment.models import Recruitment
+from schedule.serializers import ScheduleViewSerializer
 
 
 class HomepageSerializer(serializers.ModelSerializer):
-
     id = serializers.IntegerField(required=False)
-    homepage = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    facebook = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    instagram = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    twitter = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    youtube = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    tiktok = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    band = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
+    homepage = serializers.CharField(max_length=500, allow_null=True, required=False)
+    facebook = serializers.CharField(max_length=500, allow_null=True, required=False)
+    instagram = serializers.CharField(max_length=500, allow_null=True, required=False)
+    twitter = serializers.CharField(max_length=500, allow_null=True, required=False)
+    youtube = serializers.CharField(max_length=500, allow_null=True, required=False)
+    tiktok = serializers.CharField(max_length=500, allow_null=True, required=False)
+    band = serializers.CharField(max_length=500, allow_null=True, required=False)
 
     class Meta:
         model = Homepage
@@ -48,12 +37,12 @@ class HomepageSerializer(serializers.ModelSerializer):
 class UserStatus_M(serializers.ModelSerializer):
     id = serializers.IntegerField()
     alarm = serializers.SerializerMethodField()
-    member = serializers.SerializerMethodField()
-    manager = serializers.SerializerMethodField()
+    membership = serializers.SerializerMethodField()
+    membership_code = serializers.SerializerMethodField()
 
     class Meta:
         model = UserCircle_Member
-        fields = ["id", "alarm", "member", "manager"]
+        fields = ["id", "alarm", "membership", "membership_code"]
 
     def get_id(self, obj):
         return obj.user.id
@@ -63,23 +52,17 @@ class UserStatus_M(serializers.ModelSerializer):
             UserCircle_Alarm.objects.get_or_none(user=obj.user, circle=obj.circle)
         )
 
-    def get_member(self, obj):
-        return bool(
-            UserCircle_Member.objects.get_or_none(user=obj.user, circle=obj.circle)
-        )
+    def get_membership(self, obj):
+        return user_membership(obj.circle, obj.user)[0]
 
-    def get_manager(self, obj):
-        return bool(
-            UserCircle_Member.objects.get_or_none(
-                user=obj.user, circle=obj.circle, is_manager=True
-            )
-        )
+    def get_membership_code(self, obj):
+        return user_membership(obj.circle, obj.user)[1]
 
 
 class UserStatus_A(UserStatus_M):
     class Meta:
         model = UserCircle_Alarm
-        fields = ["id", "alarm", "member", "manager"]
+        fields = ["id", "alarm", "membership", "membership_code"]
 
 
 class CircleViewSerializer(serializers.ModelSerializer):
@@ -95,6 +78,9 @@ class CircleViewSerializer(serializers.ModelSerializer):
     tag = serializers.CharField()
     tag_integer = serializers.SerializerMethodField()
 
+    d_day = serializers.SerializerMethodField()
+    d_day_detail = serializers.SerializerMethodField()
+
     class Meta:
         model = Circle
         fields = [
@@ -107,8 +93,28 @@ class CircleViewSerializer(serializers.ModelSerializer):
             "tag",
             "tag_integer",
             "homepage",
+            "d_day",
+            "d_day_detail",
         ]
         # extra_fields = ['problems']
+
+    def get_d_day(self, instance):
+        recruitment = Recruitment.objects.get_or_none(circle=instance)
+        if recruitment is None:
+            return None
+        d_day_schedule, d_day_days = d_day_calculator(recruitment)
+        if d_day_days == "ERROR":
+            return None
+        return d_day_days
+
+    def get_d_day_detail(self, instance):
+        recruitment = Recruitment.objects.get_or_none(circle=instance)
+        if recruitment is None:
+            return None
+        d_day_schedule, d_day_days = d_day_calculator(recruitment)
+        if d_day_schedule == "ERROR":
+            return None
+        return ScheduleViewSerializer(d_day_schedule).data
 
     def get_homepage(self, obj):
         return HomepageSerializer(obj.homepage).data
@@ -121,39 +127,16 @@ class CircleViewSerializer(serializers.ModelSerializer):
 class CircleSerializer(serializers.ModelSerializer):
     type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices)
     type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices)
-    name = serializers.CharField(max_length=100, allow_null=False, allow_blank=False)
-    bio = serializers.CharField(
-        max_length=300, allow_null=False, allow_blank=True, required=False
-    )
-
-    homepage = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    facebook = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    instagram = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    twitter = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    youtube = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    tiktok = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    band = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
+    name = serializers.CharField(max_length=100)
+    bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
 
     introduction = serializers.CharField(
         max_length=5000, allow_null=True, allow_blank=True, required=False
     )
     tag = serializers.CharField(
-        max_length=500, allow_null=False, allow_blank=True, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
+    homepage = HomepageSerializer(read_only=True, many=False)
 
     class Meta:
         model = Circle
@@ -164,8 +147,11 @@ class CircleSerializer(serializers.ModelSerializer):
             "bio",
             "introduction",
             "tag",
-        ] + HomepageSerializer.Meta.fields
-        # extra_fields = ['problems']
+            "homepage",
+        ]
+        validators = [
+            UniqueTogetherValidator(queryset=Circle.objects.all(), fields=["name"])
+        ]
 
     def create(self, validated_data):
 
@@ -181,72 +167,27 @@ class CircleSerializer(serializers.ModelSerializer):
 
         circle = Circle.objects.create(**validated_data)
 
-        tags = circle.tag.split(" ")
-        for tag in tags:
-            if not (hashtag := Hashtag.objects.get_or_none(name=tag)):
-                hashtag = Hashtag.objects.create(name=tag)
-            if not (
-                hashtag_circle := HashtagCircle.objects.get_or_none(
-                    hashtag=hashtag, circle=circle
-                )
-            ):
-                hashtag_circle = HashtagCircle.objects.create(
-                    hashtag=hashtag, circle=circle
-                )
+        update_hashtag(circle, circle.tag)
 
         return circle
 
 
-class CircleUpdateSerializer(serializers.ModelSerializer):
-    type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices, required=False)
-    type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices, required=False)
-    name = serializers.CharField(
-        max_length=100, allow_null=False, allow_blank=False, required=False
-    )
-    bio = serializers.CharField(
-        max_length=300, allow_null=False, allow_blank=True, required=False
-    )
-
-    homepage = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    facebook = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    instagram = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    twitter = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    youtube = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    tiktok = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    band = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-
+class CircleUpdateSerializer(CircleSerializer):
+    name = serializers.CharField(max_length=100, required=False)
+    bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
+    homepage = serializers.CharField(max_length=500, allow_null=True, required=False)
+    facebook = serializers.CharField(max_length=500, allow_null=True, required=False)
+    instagram = serializers.CharField(max_length=500, allow_null=True, required=False)
+    twitter = serializers.CharField(max_length=500, allow_null=True, required=False)
+    youtube = serializers.CharField(max_length=500, allow_null=True, required=False)
+    tiktok = serializers.CharField(max_length=500, allow_null=True, required=False)
+    band = serializers.CharField(max_length=500, allow_null=True, required=False)
     introduction = serializers.CharField(
         max_length=5000, allow_null=True, allow_blank=True, required=False
     )
     tag = serializers.CharField(
         max_length=500, allow_null=False, allow_blank=True, required=False
     )
-
-    class Meta:
-        model = Circle
-        fields = [
-            "type0",
-            "type1",
-            "name",
-            "bio",
-            "introduction",
-            "tag",
-        ] + HomepageSerializer.Meta.fields
-        # extra_fields = ['problems']
 
     def update(self, instance, validated_data):
         data = {}
@@ -261,18 +202,7 @@ class CircleUpdateSerializer(serializers.ModelSerializer):
         # tag update
         if "tag" in validated_data:
             instance.tag = validated_data.pop("tag")
-            tags = list(set(instance.tag.split(" ")))
-
-            hashtags = [Hashtag.objects.get_or_create(name=tag)[0] for tag in tags]
-
-            HashtagCircle.objects.filter(circle=instance).exclude(
-                hashtag__in=hashtags
-            ).delete()
-
-            for hashtag in hashtags:
-                hashtag_circle = HashtagCircle.objects.get_or_create(
-                    circle=instance, hashtag=hashtag
-                )
+            update_hashtag(instance, instance.tag)
 
         return super().update(instance, validated_data)
 

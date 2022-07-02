@@ -6,13 +6,13 @@ from common.models import BaseModel
 
 
 class Homepage(BaseModel):
-    homepage = models.CharField(max_length=500, null=True, blank=False)
-    facebook = models.CharField(max_length=500, null=True, blank=False)
-    instagram = models.CharField(max_length=500, null=True, blank=False)
-    twitter = models.CharField(max_length=500, null=True, blank=False)
-    youtube = models.CharField(max_length=500, null=True, blank=False)
-    tiktok = models.CharField(max_length=500, null=True, blank=False)
-    band = models.CharField(max_length=500, null=True, blank=False)
+    homepage = models.CharField(max_length=500, null=True, blank=True)
+    facebook = models.CharField(max_length=500, null=True, blank=True)
+    instagram = models.CharField(max_length=500, null=True, blank=True)
+    twitter = models.CharField(max_length=500, null=True, blank=True)
+    youtube = models.CharField(max_length=500, null=True, blank=True)
+    tiktok = models.CharField(max_length=500, null=True, blank=True)
+    band = models.CharField(max_length=500, null=True, blank=True)
 
 
 class Circle(BaseModel):
@@ -46,6 +46,15 @@ class Circle(BaseModel):
 
     introduction = models.CharField(max_length=5000, null=True, blank=True)
     tag = models.CharField(max_length=500, null=False, blank=True)
+
+    class MakeNewMember(models.IntegerChoices):
+        일반 = 0, "일반"  # 비회원 이상의 유저 초대 권한 가짐
+        회원 = 1, "회원"  # 회원 이상의 유저 초대 권한 가짐
+        관리자 = 2, "관리자"  # 관리자 이상의 유저 초대 권한 가짐
+
+    make_new_member = models.PositiveSmallIntegerField(
+        choices=MakeNewMember.choices, default=MakeNewMember.회원
+    )
 
     def __str__(self):
         return self.name

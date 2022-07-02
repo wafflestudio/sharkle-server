@@ -110,3 +110,45 @@ class PostLoginTestCase(TestCase):
         response_data = response.json()
         self.assertIn("refresh", response_data)
         self.assertIn("access", response_data)
+
+
+class PostDuplicateCheckTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory(
+            email="duplicate@sharkle.com",
+            username="duplicate",
+            password="password",
+        )
+
+    def test_email_duplicate(self):
+        data = {"email": "duplicate@sharkle.com"}
+        response = self.client.post(
+            "/api/v1/auth/duplicate/email/", data=data, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_email_unique(self):
+        data = {"email": "unique@sharkle.com"}
+        response = self.client.post(
+            "/api/v1/auth/duplicate/email/", data=data, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_username_duplicate(self):
+        data = {"username": "duplicate"}
+        response = self.client.post(
+            "/api/v1/auth/duplicate/username/",
+            data=data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_username_unique(self):
+        data = {"username": "unique"}
+        response = self.client.post(
+            "/api/v1/auth/duplicate/username/",
+            data=data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

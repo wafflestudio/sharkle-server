@@ -36,3 +36,25 @@ class UserSignUpSerializer(serializers.Serializer):
         )
 
         return user
+
+
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def is_duplicate(self):
+        return (
+            True
+            if User.objects.filter(email=self.validated_data["email"]).exists()
+            else False
+        )
+
+
+class UsernameSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+
+    def is_duplicate(self):
+        return (
+            True
+            if User.objects.filter(username=self.validated_data["username"]).exists()
+            else False
+        )

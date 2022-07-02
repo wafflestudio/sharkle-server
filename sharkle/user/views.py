@@ -7,7 +7,12 @@ from rest_framework.views import APIView
 from user.serializers import UserSignUpSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
-from .serializers import UserViewSerializer
+from .serializers import (
+    UserViewSerializer,
+    EmailSerializer,
+    UsernameSerializer,
+    PasswordSerializer,
+)
 from .models import User
 from common.exception_response import ExceptionResponse, ErrorCode
 from django.contrib.auth.models import AnonymousUser
@@ -126,8 +131,49 @@ class SignUpView(APIView):
         return Response(data=data, status=status.HTTP_201_CREATED)
 
 
-# class FindPasswordView(APIView):
-#     permission_classes = (permissions.AllowAny,)
-#
-#     def post(self, request):
-#         user
+# Duplicate Check
+class DuplicateEmailCheckView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serializer = EmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if serializer.is_duplicate():
+            return ExceptionResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                detail="이미 데이터베이스에 존재하는 이메일입니다.",
+                code=ErrorCode.DATABASE_ERROR,
+            ).to_response()
+        return Response(data={"detail": "사용 가능한 이메일입니다."}, status=status.HTTP_200_OK)
+
+
+class DuplicateUsernameCheckView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serializer = UsernameSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if serializer.is_duplicate():
+            return ExceptionResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                detail="이미 데이터베이스에 존재하는 유저명입니다.",
+                code=ErrorCode.DATABASE_ERROR,
+            ).to_response()
+        return Response(data={"detail": "사용 가능한 사용자 이름입니다."}, status=status.HTTP_200_OK)
+
+
+class PasswordValidationView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serializer = PasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if not serializer.is_valid_password_form():
+            return ExceptionResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                detail="비밀번호 형식 조건에 맞지 않습니다",
+                code=ErrorCode.PASSWORD_FORMAT_INVALID,
+            ).to_response()
+
+        return Response(data={"detail": "사용 가능한 비밀번호입니다."}, status=status.HTTP_200_OK)

@@ -13,7 +13,6 @@ class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
 
-    user_id = factory.Sequence(lambda n: "user_id%d" % n)
     username = factory.Sequence(lambda n: "user%d" % n)
     email = factory.LazyAttribute(lambda o: "%s@sharkle.org" % o.username)
     password = "1234"

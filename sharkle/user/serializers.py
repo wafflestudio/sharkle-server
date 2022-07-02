@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import (
     TokenObtainSerializer,
@@ -5,25 +7,20 @@ from rest_framework_simplejwt.serializers import (
 )
 from user.models import User
 
+
 class UserViewSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(required=False)
-    user_id = serializers.CharField()
     username = serializers.CharField()
     email = serializers.CharField()
 
     class Meta:
         model = User
-        fields = [
-            "id",
-            "user_id",
-            "username",
-            "email"
-        ]
+        fields = ["id", "username", "email"]
+
 
 class UserSignUpSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
-    user_id = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
 
@@ -32,18 +29,53 @@ class UserSignUpSerializer(serializers.Serializer):
             raise serializers.ValidationError("이미 가입된 이메일입니다.")
         return email
 
-    def validate_user_id(self, user_id):
-        if User.objects.filter(user_id=user_id).exists():
-            raise serializers.ValidationError("이미 가입된 아이디입니다.")
-        return user_id
-
     def create(self, validated_data):
         username = validated_data.get("username")
-        user_id = validated_data.get("user_id")
         email = validated_data.get("email")
         password = validated_data.get("password")
         user = User.objects.create_user(
-            username=username, user_id=user_id, email=email, password=password
+            username=username, email=email, password=password
         )
 
         return user
+
+
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def is_duplicate(self):
+        return (
+            True
+            if User.objects.filter(email=self.validated_data["email"]).exists()
+            else False
+        )
+
+
+class UsernameSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+
+    def is_duplicate(self):
+        return (
+            True
+            if User.objects.filter(username=self.validated_data["username"]).exists()
+            else False
+        )
+
+
+class PasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(required=True)
+
+    def is_valid_password_form(self):
+        pwd = self.data["password"]
+
+        if len(pwd) < 9:
+            return False
+
+        special_m = re.findall("[!@#$%^&*?+~]", pwd)  # special_chars = '!@#$%^&*?+~'
+        alpha_m = re.findall("[a-zA-Z]", pwd)
+        num_m = re.findall("[0-9]", pwd)
+        unallowed_m = re.findall("[^0-9a-zA-A!@#$%^&*?+~]", pwd)
+
+        if special_m and alpha_m and num_m and not unallowed_m:
+            return True
+        return False

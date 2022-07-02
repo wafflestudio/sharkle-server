@@ -27,6 +27,7 @@ class ExceptionResponse:
 class ErrorCode(Enum):
     INVALID_REQUEST = 0  # NOT used
     BOARD_NOT_IN_CIRCLE = 1
+    PASSWORD_FORMAT_INVALID = 2
 
     NOT_ALLOWED = 3000  # NOT used
     NOT_MEMBER = 3001

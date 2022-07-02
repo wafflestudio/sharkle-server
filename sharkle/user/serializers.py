@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import (
     TokenObtainSerializer,
@@ -58,3 +60,22 @@ class UsernameSerializer(serializers.Serializer):
             if User.objects.filter(username=self.validated_data["username"]).exists()
             else False
         )
+
+
+class PasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(required=True)
+
+    def is_valid_password_form(self):
+        pwd = self.data["password"]
+
+        if len(pwd) < 9:
+            return False
+
+        special_m = re.findall("[!@#$%^&*?+~]", pwd)  # special_chars = '!@#$%^&*?+~'
+        alpha_m = re.findall("[a-zA-Z]", pwd)
+        num_m = re.findall("[0-9]", pwd)
+        unallowed_m = re.findall("[^0-9a-zA-A!@#$%^&*?+~]", pwd)
+
+        if special_m and alpha_m and num_m and not unallowed_m:
+            return True
+        return False

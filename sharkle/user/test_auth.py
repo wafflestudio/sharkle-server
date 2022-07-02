@@ -152,3 +152,23 @@ class PostDuplicateCheckTestCase(TestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class PasswordCheckTestCase(TestCase):
+    def test_password1(self):
+        data = {"password": "1234asfasfas"}
+        response = self.client.post(
+            "/api/v1/auth/validate/password/",
+            data=data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_password2(self):
+        data = {"password": "1234afsdf^&aa"}
+        response = self.client.post(
+            "/api/v1/auth/validate/password/",
+            data=data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

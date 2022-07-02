@@ -6,6 +6,7 @@ from user.send_email import EmailViewSet
 from user.views import (
     PingPongView,
     SignUpView,
+    PasswordValidationView,
     DuplicateUsernameCheckView,
     DuplicateEmailCheckView,
 )
@@ -24,6 +25,9 @@ urlpatterns = [
     path("auth/signup/", SignUpView.as_view(), name="signup"),  # /api/v1/auth/signup/
     path(
         "auth/login/", TokenObtainPairView.as_view(), name="login"
+    ),  # /api/v1/auth/login/
+    path(
+        "auth/validate/password/", PasswordValidationView.as_view(), name="password"
     ),  # /api/v1/auth/login/
     path(
         "auth/duplicate/email/", DuplicateEmailCheckView.as_view(), name="emailcheck"

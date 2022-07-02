@@ -25,9 +25,6 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault(
-            "user_id", f"admin_{extra_fields.get('email').split('@')[0]}"
-        )
-        extra_fields.setdefault(
             "username", f"admin_{extra_fields.get('email').split('@')[0]}"
         )
 
@@ -47,8 +44,7 @@ class User(AbstractBaseUser):
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
 
-    user_id = models.CharField(max_length=20, unique=True)
-    username = models.CharField(max_length=15)
+    username = models.CharField(max_length=20, unique=True)
     email = models.EmailField(max_length=30, unique=True)
 
     is_superuser = models.BooleanField(default=False)

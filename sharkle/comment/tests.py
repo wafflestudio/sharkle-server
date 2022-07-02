@@ -17,7 +17,6 @@ class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
 
-    user_id = factory.Sequence(lambda n: "user_id%d" % n)
     username = factory.Sequence(lambda n: "user%d" % n)
     email = factory.LazyAttribute(lambda o: "%s@sharkle.org" % o.username)
     password = "1234"
@@ -143,6 +142,7 @@ class GetCommentTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
+
         # TODO. count?
 
     def test_retrieve_comment_success(self):

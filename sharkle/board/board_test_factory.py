@@ -21,7 +21,6 @@ class NotMemberFactory:
             email="notMemeber@snu.ac.kr",
             password="password",
             username="user1",
-            user_id="user1",
         )
 
 
@@ -31,7 +30,6 @@ class NotManagerFactory:
             email="notmanager@snu.ac.kr",
             password="password",
             username="user2",
-            user_id="user2",
         )
 
 
@@ -41,7 +39,6 @@ class ManagerFactory:
             email="Manager@snu.ac.kr",
             password="password",
             username="user3",
-            user_id="user3",
         )
 
 

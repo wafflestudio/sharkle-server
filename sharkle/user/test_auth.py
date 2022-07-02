@@ -22,7 +22,6 @@ class PostSignUpTestCase(TestCase):
     def setUpTestData(cls):
         cls.user = UserFactory(
             email="signup@sharkle.com",
-            user_id="signup",
             username="signup",
             password="password",
         )
@@ -85,7 +84,6 @@ class PostLoginTestCase(TestCase):
     def setUpTestData(cls):
         cls.user = UserFactory(
             email="login@sharkle.com",
-            user_id="login",
             username="login",
             password="password",
         )

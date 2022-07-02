@@ -6,13 +6,13 @@ from common.models import BaseModel
 
 
 class Homepage(BaseModel):
-    homepage = models.CharField(max_length=500, null=True, blank=False)
-    facebook = models.CharField(max_length=500, null=True, blank=False)
-    instagram = models.CharField(max_length=500, null=True, blank=False)
-    twitter = models.CharField(max_length=500, null=True, blank=False)
-    youtube = models.CharField(max_length=500, null=True, blank=False)
-    tiktok = models.CharField(max_length=500, null=True, blank=False)
-    band = models.CharField(max_length=500, null=True, blank=False)
+    homepage = models.CharField(max_length=500, null=True, blank=True)
+    facebook = models.CharField(max_length=500, null=True, blank=True)
+    instagram = models.CharField(max_length=500, null=True, blank=True)
+    twitter = models.CharField(max_length=500, null=True, blank=True)
+    youtube = models.CharField(max_length=500, null=True, blank=True)
+    tiktok = models.CharField(max_length=500, null=True, blank=True)
+    band = models.CharField(max_length=500, null=True, blank=True)
 
 
 class Circle(BaseModel):

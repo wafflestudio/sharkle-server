@@ -54,3 +54,10 @@ class SignUpView(APIView):
             "access": str(refresh_token.access_token),
         }
         return Response(data=data, status=status.HTTP_201_CREATED)
+
+
+# class FindPasswordView(APIView):
+#     permission_classes = (permissions.AllowAny,)
+#
+#     def post(self, request):
+#         user

@@ -9,25 +9,25 @@ class HomepageSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(required=False)
     homepage = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
     facebook = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
     instagram = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
     twitter = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
     youtube = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
     tiktok = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
     band = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
 
     class Meta:
@@ -126,34 +126,13 @@ class CircleSerializer(serializers.ModelSerializer):
         max_length=300, allow_null=False, allow_blank=True, required=False
     )
 
-    homepage = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    facebook = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    instagram = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    twitter = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    youtube = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    tiktok = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-    band = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=False, required=False
-    )
-
     introduction = serializers.CharField(
         max_length=5000, allow_null=True, allow_blank=True, required=False
     )
     tag = serializers.CharField(
-        max_length=500, allow_null=False, allow_blank=True, required=False
+        max_length=500, allow_null=True, allow_blank=True, required=False
     )
+    homepage = HomepageSerializer(read_only=True, many=False)
 
     class Meta:
         model = Circle
@@ -164,7 +143,8 @@ class CircleSerializer(serializers.ModelSerializer):
             "bio",
             "introduction",
             "tag",
-        ] + HomepageSerializer.Meta.fields
+            "homepage",
+        ]
         # extra_fields = ['problems']
 
     def create(self, validated_data):

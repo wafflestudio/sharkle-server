@@ -135,22 +135,18 @@ def find_user(user_id, my):
 
     return None, user
 
-class UserCircleCode(Enum):
-    일반 = 0
-    회원 = 1
-    관리자 = 2
-
 def user_membership(circle, user):
-    if isinstance(user, AnonymousUser):
-        return "Anonymous", UserCircleCode.일반
 
-    membership = ("일반", UserCircleCode.일반)
+    if isinstance(user, AnonymousUser):
+        return "Anonymous", Circle.MakeNewMember.일반
+
+    membership = ("일반", Circle.MakeNewMember.일반)
     user_circle_member = UserCircle_Member.objects.get_or_none(user=user, circle=circle)
 
     if user_circle_member:
-        membership = ("회원", UserCircleCode.회원)
+        membership = ("회원", Circle.MakeNewMember.회원)
         if user_circle_member.is_manager:
-            membership = ("관리자", UserCircleCode.관리자)
+            membership = ("관리자", Circle.MakeNewMember.관리자)
 
     return membership
 

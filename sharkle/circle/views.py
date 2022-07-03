@@ -6,6 +6,7 @@ from .serializers import *
 from .models import *
 from django.db.models import Q
 from .functions import find_circle, find_user, is_string_integer, user_status, d_day_calculator_circle_sort
+from django.contrib.auth.models import AnonymousUser
 
 from board.serializers import BoardSerializer
 
@@ -33,6 +34,16 @@ class CircleViewSet(viewsets.GenericViewSet):
 
     # POST /circle/
     def create(self, request):
+        user = request.user
+
+        # Anonymous User 에러
+        if isinstance(user, AnonymousUser):
+            return ExceptionResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                detail="로그인하지 않은 상태입니다. ",
+                code=ErrorCode.ANONYMOUS_USER,
+            ).to_response()
+
         serializer = self.get_serializer(
             data=request.data, context={"request": request}
         )
@@ -44,10 +55,12 @@ class CircleViewSet(viewsets.GenericViewSet):
         comm_board = Board(circle=circle, name="Community", is_private=True)
         comm_board.save()
 
+        user_circle_member = UserCircle_Member(circle=circle, user=user, is_manager=True)
+        user_circle_member.save()
+
         return Response(
             status=status.HTTP_201_CREATED, data=CircleViewSerializer(circle).data
         )
-
     # GET /circle/{id}/
     def retrieve(self, request, pk):
         error, circle = find_circle(pk)

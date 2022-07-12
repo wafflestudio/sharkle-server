@@ -99,6 +99,17 @@ def find_schedule(schedule_id, circle):
 
     return None, schedule
 
+def find_circle_string(circle_name):
+    # 존재하지 않는 동아리
+    if not (circle := Circle.objects.get_or_none(name=circle_name)):
+        return ExceptionResponse(
+            status=status.HTTP_404_NOT_FOUND,
+            detail="name: " + circle_name + "에 해당하는 동아리가 존재하지 않습니다.",
+            code=ErrorCode.CIRCLE_NOT_FOUND,
+        ).to_response(), None
+
+    return None, circle
+
 
 def find_circle(circle_id):
     # 존재하지 않는 동아리

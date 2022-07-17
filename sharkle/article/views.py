@@ -11,7 +11,7 @@ from common.exception_response import ExceptionResponse, ErrorCode
 class ArticleViewSet(viewsets.GenericViewSet):
     queryset = Article.objects.all()  # .... not appropriate?
     serializer_class = ArticleSerializer
-    permission_classes = (permissions.IsAuthenticated,)  # TODO
+    permission_classes = (permissions.AllowAny,)  # TODO
 
     # POST /circle/{id}/board/{id}/article/
     def create(self, request, circle_id, board_id):  # TODO request // id.. how kwargs?

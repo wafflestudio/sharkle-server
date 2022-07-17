@@ -138,7 +138,7 @@ class CircleSerializer(serializers.ModelSerializer):
     band = serializers.CharField(max_length=500, allow_null=True, required=False)
 
     bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
-    introduction = serializers.CharField(max_length=5000, allow_blank=True, required=False)
+    introduction = serializers.CharField(max_length=5000, allow_null=True, allow_blank=True, required=False)
     tag = serializers.CharField(max_length=500, allow_blank=True, required=False)
 
     class Meta:

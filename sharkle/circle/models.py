@@ -44,7 +44,7 @@ class Circle(BaseModel):
     bio = models.CharField(max_length=300, null=False, blank=True)
     homepage = models.ForeignKey(Homepage, on_delete=models.SET_NULL, null=True)
 
-    introduction = models.CharField(max_length=5000, null=False, blank=True, default="")
+    introduction = models.CharField(max_length=5000, null=True, blank=True)
     tag = models.CharField(max_length=500, null=False, blank=True)
 
     class MakeNewMember(models.IntegerChoices):

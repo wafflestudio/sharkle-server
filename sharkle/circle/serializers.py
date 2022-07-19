@@ -128,15 +128,18 @@ class CircleSerializer(serializers.ModelSerializer):
     type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices)
     type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices)
     name = serializers.CharField(max_length=100)
-    bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
 
-    introduction = serializers.CharField(
-        max_length=5000, allow_null=True, allow_blank=True, required=False
-    )
-    tag = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=True, required=False
-    )
-    homepage = HomepageSerializer(read_only=True, many=False)
+    homepage = serializers.CharField(max_length=500, allow_null=True, required=False)
+    facebook = serializers.CharField(max_length=500, allow_null=True, required=False)
+    instagram = serializers.CharField(max_length=500, allow_null=True, required=False)
+    twitter = serializers.CharField(max_length=500, allow_null=True, required=False)
+    youtube = serializers.CharField(max_length=500, allow_null=True, required=False)
+    tiktok = serializers.CharField(max_length=500, allow_null=True, required=False)
+    band = serializers.CharField(max_length=500, allow_null=True, required=False)
+
+    bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
+    introduction = serializers.CharField(max_length=5000, allow_null=True, allow_blank=True, required=False)
+    tag = serializers.CharField(max_length=500, allow_blank=True, required=False)
 
     class Meta:
         model = Circle
@@ -147,8 +150,7 @@ class CircleSerializer(serializers.ModelSerializer):
             "bio",
             "introduction",
             "tag",
-            "homepage",
-        ]
+        ] + HomepageSerializer.Meta.fields
         validators = [
             UniqueTogetherValidator(queryset=Circle.objects.all(), fields=["name"])
         ]
@@ -173,21 +175,9 @@ class CircleSerializer(serializers.ModelSerializer):
 
 
 class CircleUpdateSerializer(CircleSerializer):
+    type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices, required=False)
+    type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices, required=False)
     name = serializers.CharField(max_length=100, required=False)
-    bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
-    homepage = serializers.CharField(max_length=500, allow_null=True, required=False)
-    facebook = serializers.CharField(max_length=500, allow_null=True, required=False)
-    instagram = serializers.CharField(max_length=500, allow_null=True, required=False)
-    twitter = serializers.CharField(max_length=500, allow_null=True, required=False)
-    youtube = serializers.CharField(max_length=500, allow_null=True, required=False)
-    tiktok = serializers.CharField(max_length=500, allow_null=True, required=False)
-    band = serializers.CharField(max_length=500, allow_null=True, required=False)
-    introduction = serializers.CharField(
-        max_length=5000, allow_null=True, allow_blank=True, required=False
-    )
-    tag = serializers.CharField(
-        max_length=500, allow_null=False, allow_blank=True, required=False
-    )
 
     def update(self, instance, validated_data):
         data = {}

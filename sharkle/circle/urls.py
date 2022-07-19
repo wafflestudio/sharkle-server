@@ -29,4 +29,7 @@ urlpatterns = [
         intro_detail,
         name="intro_detail",
     ),
+    path(
+        "circle/<str:circle_name>/name/", CircleNameView.as_view(), name="circle_name"
+    ),
 ]

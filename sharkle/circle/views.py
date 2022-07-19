@@ -1,11 +1,19 @@
 from rest_framework import serializers, status, viewsets, permissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from common.exception_response import ExceptionResponse, ErrorCode
 from .serializers import *
 from .models import *
 from django.db.models import Q
-from .functions import find_circle, find_user, is_string_integer, user_status, d_day_calculator_circle_sort
+from .functions import (
+    find_circle,
+    find_user,
+    is_string_integer,
+    user_status,
+    d_day_calculator_circle_sort,
+    find_circle_string,
+)
 
 from board.serializers import BoardSerializer
 
@@ -83,7 +91,6 @@ class CircleViewSet(viewsets.GenericViewSet):
         return Response(
             status=status.HTTP_200_OK, data={"detail": "deleted successfully"}
         )
-
 
     # GET /circle/
     def list(self, request):
@@ -173,6 +180,20 @@ class CircleViewSet(viewsets.GenericViewSet):
                 q &= Q(name__icontains=k)
             queryset = queryset.filter(q)
         return queryset.distinct()
+
+
+class CircleNameView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    # GET /circle/{circle_name}/name
+    def get(self, request, circle_name):
+        error, circle = find_circle_string(circle_name)
+        if error:
+            return error
+
+        return Response(
+            status=status.HTTP_200_OK, data=CircleViewSerializer(circle).data
+        )
 
 
 class UserCircleViewSet(viewsets.GenericViewSet):
@@ -273,10 +294,7 @@ class UserCircleUpdateSet(viewsets.GenericViewSet):
             else:
                 return self.no_authority_error
 
-        return Response(
-            status=status.HTTP_200_OK,
-            data=user_status(circle, user)
-        )
+        return Response(status=status.HTTP_200_OK, data=user_status(circle, user))
 
     # DELETE /circle/{id}/account/{id}/{name}/
     def delete(self, request, circle_id, user_id, pk):
@@ -295,7 +313,9 @@ class UserCircleUpdateSet(viewsets.GenericViewSet):
         if pk == "alarm":
             # 내 계정의 알람만 변경 가능
             if user == my:
-                if user_circle_alarm := UserCircle_Alarm.objects.get_or_none(user=user, circle=circle):
+                if user_circle_alarm := UserCircle_Alarm.objects.get_or_none(
+                    user=user, circle=circle
+                ):
                     user_circle_alarm.delete()
             else:
                 return self.no_authority_error
@@ -304,7 +324,9 @@ class UserCircleUpdateSet(viewsets.GenericViewSet):
             # 내 계정 혹은 관리자 계정이 member 권한 삭제 가능
             if my == user or my_membership[0] == "관리자":
 
-                if user_circle_member := UserCircle_Member.objects.get_or_none(user=user, circle=circle):
+                if user_circle_member := UserCircle_Member.objects.get_or_none(
+                    user=user, circle=circle
+                ):
                     user_circle_member.delete()
             else:
                 return self.no_authority_error
@@ -312,16 +334,15 @@ class UserCircleUpdateSet(viewsets.GenericViewSet):
         if pk == "manager":
             # 내 계정 혹은 관리자 계정이 manager 권한 삭제 가능
             if my == user or my_membership[0] == "관리자":
-                if user_circle_member := UserCircle_Member.objects.get_or_none(user=user, circle=circle):
+                if user_circle_member := UserCircle_Member.objects.get_or_none(
+                    user=user, circle=circle
+                ):
                     user_circle_member.is_manager = False
                     user_circle_member.save()
             else:
                 return self.no_authority_error
 
-        return Response(
-            status=status.HTTP_200_OK,
-            data=user_status(circle, user)
-        )
+        return Response(status=status.HTTP_200_OK, data=user_status(circle, user))
 
 
 class IntroViewSet(viewsets.ViewSet):

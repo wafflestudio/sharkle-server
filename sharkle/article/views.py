@@ -42,7 +42,7 @@ class ArticleViewSet(viewsets.GenericViewSet):
             ).to_response()
         article.view = article.view + 1
         article.save()
-        return Response(self.get_serializer(article).data)
+        return Response(self.get_serializer(article).data, status=status.HTTP_200_OK)
 
     # PUT /circle/{id}/board/{id}/article/{id}/
     def update(self, request, circle_id, board_id, pk=None):

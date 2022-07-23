@@ -203,3 +203,44 @@ class DeleteArticleTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(prev_count, Article.objects.count())
+
+
+class ViewCountsTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.board = BoardFactory()
+        cls.circle = cls.board.circle
+        cls.default_data = {"title": "Announce", "content": "welcome it's a test"}
+        cls.user_token = "Bearer " + str(RefreshToken.for_user(cls.user).access_token)
+
+    def test_view_count_success(self):
+        data = self.default_data.copy()
+        prev_count = Article.objects.count()
+        response = self.client.post(
+            f"/api/v1/circle/{self.board.circle.id}/board/{self.board.id}/article/",
+            data=data,
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.user_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(prev_count + 1, Article.objects.count())
+        response_data = response.json()
+        self.assertEqual(response_data["view"], 0)
+        article_id = response_data["id"]
+        self.assertIn("title", response_data)
+        self.assertIn("content", response_data)
+        for i in range(1, 10):
+            response = self.client.get(
+                f"/api/v1/circle/{self.board.circle.id}/board/{self.board.id}/article/{article_id}/",
+                data=data,
+                content_type="application/json",
+                HTTP_AUTHORIZATION=self.user_token,
+            )
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            response_data = response.json()
+            self.assertEqual(response_data["view"], i)
+            self.assertIn("title", response_data)
+            self.assertIn("content", response_data)

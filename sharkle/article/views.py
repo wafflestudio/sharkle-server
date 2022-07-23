@@ -40,6 +40,8 @@ class ArticleViewSet(viewsets.GenericViewSet):
                 detail="id: " + str(pk) + "에 해당하는 게시물이 존재하지 않습니다.",
                 code=ErrorCode.ARTICLE_NOT_FOUND,
             ).to_response()
+        article.view = article.view + 1
+        article.save()
         return Response(self.get_serializer(article).data)
 
     # PUT /circle/{id}/board/{id}/article/{id}/

@@ -19,7 +19,6 @@ class ArticleViewSet(viewsets.GenericViewSet):
         data = request.data.copy()
         data["board"] = board_id
         data["author"] = user.id
-
         serializer = ArticleCreateSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -28,7 +27,10 @@ class ArticleViewSet(viewsets.GenericViewSet):
     # GET /circle/{id}/board/{id}/article/ TODO pagination
     def list(self, request, circle_id, board_id):
         articles = self.get_queryset().filter(board=board_id)
-        return Response(self.get_serializer(articles, many=True).data)
+        data = self.get_serializer(articles, many=True).data
+        return Response(
+            {"articles": data, "count": articles.count()}, status=status.HTTP_200_OK
+        )
 
     # GET /circle/{id}/board/{id}/article/{id}/
     def retrieve(self, request, circle_id, board_id, pk=None):
@@ -38,7 +40,9 @@ class ArticleViewSet(viewsets.GenericViewSet):
                 detail="id: " + str(pk) + "에 해당하는 게시물이 존재하지 않습니다.",
                 code=ErrorCode.ARTICLE_NOT_FOUND,
             ).to_response()
-        return Response(self.get_serializer(article).data)
+        article.view = article.view + 1
+        article.save()
+        return Response(self.get_serializer(article).data, status=status.HTTP_200_OK)
 
     # PUT /circle/{id}/board/{id}/article/{id}/
     def update(self, request, circle_id, board_id, pk=None):

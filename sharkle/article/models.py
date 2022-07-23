@@ -14,5 +14,6 @@ class Article(BaseModel):
     is_private = models.BooleanField(default=False)
     title = models.CharField(max_length=20, blank=False)
     content = models.CharField(max_length=1000, blank=False)  # TODO blank=False null
+    view = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

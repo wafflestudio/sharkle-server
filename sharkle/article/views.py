@@ -27,7 +27,10 @@ class ArticleViewSet(viewsets.GenericViewSet):
     # GET /circle/{id}/board/{id}/article/ TODO pagination
     def list(self, request, circle_id, board_id):
         articles = self.get_queryset().filter(board=board_id)
-        return Response(self.get_serializer(articles, many=True).data)
+        data = self.get_serializer(articles, many=True).data
+        return Response(
+            {"articles": data, "count": articles.count()}, status=status.HTTP_200_OK
+        )
 
     # GET /circle/{id}/board/{id}/article/{id}/
     def retrieve(self, request, circle_id, board_id, pk=None):

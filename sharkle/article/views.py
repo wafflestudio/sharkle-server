@@ -19,7 +19,6 @@ class ArticleViewSet(viewsets.GenericViewSet):
         data = request.data.copy()
         data["board"] = board_id
         data["author"] = user.id
-
         serializer = ArticleCreateSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()

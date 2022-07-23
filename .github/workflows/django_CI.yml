@@ -36,6 +36,7 @@ jobs:
       run: |
         python manage.py makemigrations
         python manage.py migrate
+      working-directory: ./sharkle
     - name: Run Tests
       run: |
         python manage.py test

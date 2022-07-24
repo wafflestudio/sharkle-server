@@ -134,7 +134,7 @@ class SignUpView(APIView):
         }
         return Response(data=data, status=status.HTTP_201_CREATED)
 
-# Create user and return refresh & access token
+# Sign in as user and return refresh & access token
 class SignInView(TokenObtainPairView):
     permission_classes = (permissions.AllowAny,)
 

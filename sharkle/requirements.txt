@@ -12,4 +12,4 @@ black==22.1.0
 pre-commit==2.17.0
 factory-boy==3.2.1
 boto3==1.21.18
-django-storages=1.12.3
+django-storages==1.12.3

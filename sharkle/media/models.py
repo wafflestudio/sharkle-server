@@ -8,13 +8,13 @@ from random import randint
 
 
 def image_upload_path(instance, filename):
-    filename_base, filename_ext = os.path.splitext(filename)
+    filename_base, filename_ext = os.path.splitext(instance.image.name)
     return (
         "sharkle/"
         + now().strftime("%Y%m%d")
         + "_"
         + str(randint(10000000, 99999999))
-        + filename_ext
+        + filename_ext  # ex) 20220724_60991341.png
     )
 
 

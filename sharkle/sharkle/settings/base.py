@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "article",
     "comment",
     "schedule",
+    "media",
 ]
 
 MIDDLEWARE = [
@@ -184,8 +185,8 @@ AWS_S3_OBJECT_PARAMETERS = {
 AWS_S3_HOST = "s3.ap-northeast-2.amazonaws.com"
 AWS_QUERYSTRING_AUTH = False
 
-DEFAULT_FILE_STORAGE = "sharkle.custom_storages.MediaStorage"
-STATICFILES_STORAGE = "sharkle.custom_storages.StaticStorage"
+DEFAULT_FILE_STORAGE = "sharkle.custom_storage.MediaStorage"
+STATICFILES_STORAGE = "sharkle.custom_storage.StaticStorage"
 
 
 SITE_ID = 1  # example.com ...

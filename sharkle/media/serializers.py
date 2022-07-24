@@ -22,3 +22,4 @@ class MultipleImageUploadSerializer(serializers.Serializer):
 class ImageViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
+        fields = "__all__"

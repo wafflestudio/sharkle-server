@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status, permissions
 from media.models import Image
 from media.serializers import MultipleImageUploadSerializer, ImageViewSerializer
 
@@ -9,6 +9,8 @@ from rest_framework.response import Response
 
 
 class ImageUploadView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
     def post(self, request):
         serializer = MultipleImageUploadSerializer(
             data=request.data, context={"request": request}

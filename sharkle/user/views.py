@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from user.serializers import UserSignUpSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.db import IntegrityError
 from .serializers import (
     UserViewSerializer,
@@ -127,9 +129,27 @@ class SignUpView(APIView):
         data = {
             "refresh": str(refresh_token),
             "access": str(refresh_token.access_token),
+            "username": serializer.data["username"],
+            "email": serializer.data["email"],
         }
         return Response(data=data, status=status.HTTP_201_CREATED)
 
+# Sign in as user and return refresh & access token
+class SignInView(TokenObtainPairView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+        data = serializer.validated_data
+        user = User.objects.get(email=request.data["email"])
+        data["username"] = user.username
+        data["email"] = request.data["email"]
+        return Response(data, status=status.HTTP_200_OK)
 
 # Duplicate Check
 class DuplicateEmailCheckView(APIView):

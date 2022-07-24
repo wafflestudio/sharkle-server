@@ -40,15 +40,14 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "user",
-    'recruitment',
+    "recruitment",
     "board",
     "hashtag",
     "circle",
     "article",
     "comment",
     "schedule",
-
-
+    "media",
 ]
 
 MIDDLEWARE = [
@@ -172,5 +171,22 @@ AUTH_USER_MODEL = "user.User"
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = os.environ.get("AWS_DEFAULT_REGION")
+# s3
+AWS_S3_ACCESS_KEY_ID = os.environ.get("AWS_S3_ACCESS_KEY_ID")
+AWS_S3_SECRET_ACCESS_KEY = os.environ.get("AWS_S3_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = "sharkle-s3"
+AWS_S3_CUSTOM_DOMAIN = "%s.s3.%s.amazonaws.com" % (
+    AWS_STORAGE_BUCKET_NAME,
+    AWS_DEFAULT_REGION,
+)
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
+}
+AWS_S3_HOST = "s3.ap-northeast-2.amazonaws.com"
+AWS_QUERYSTRING_AUTH = False
+
+DEFAULT_FILE_STORAGE = "sharkle.custom_storage.MediaStorage"
+STATICFILES_STORAGE = "sharkle.custom_storage.StaticStorage"
+
 
 SITE_ID = 1  # example.com ...

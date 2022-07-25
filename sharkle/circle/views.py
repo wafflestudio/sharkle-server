@@ -2,15 +2,14 @@ from rest_framework import serializers, status, viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+import user_circle.views
 from common.exception_response import ExceptionResponse, ErrorCode
 from .serializers import *
 from .models import *
 from django.db.models import Q
 from .functions import (
     find_circle,
-    find_user,
     is_string_integer,
-    user_status,
     d_day_calculator_circle_sort,
     find_circle_string,
 )
@@ -194,156 +193,6 @@ class CircleNameView(APIView):
         return Response(
             status=status.HTTP_200_OK, data=CircleViewSerializer(circle).data
         )
-
-
-class UserCircleViewSet(viewsets.GenericViewSet):
-    serializer_class = CircleSerializer
-    permission_classes = (permissions.AllowAny,)  # 테스트용 임시
-
-    # GET /circle/{id}/account/
-    def list(self, request, circle_id):
-        error, circle = find_circle(circle_id)
-        if error:
-            return error
-
-        option = request.query_params.get("option", None)
-
-        objects = dict()
-        objects["manager"] = UserCircle_Member.objects.filter(
-            is_manager=True, circle=circle
-        )
-        objects["member"] = UserCircle_Member.objects.filter(
-            is_manager=False, circle=circle
-        )
-        objects["all_member"] = UserCircle_Member.objects.filter(circle=circle)
-        objects["alarm"] = UserCircle_Alarm.objects.filter(circle=circle)
-
-        if option in ("alarm",):
-            page = self.paginate_queryset(objects[option])
-            return self.get_paginated_response(UserStatus_A(page, many=True).data)
-
-        if option in (
-            "member",
-            "manager",
-            "all_member",
-        ):
-            page = self.paginate_queryset(objects[option])
-            return self.get_paginated_response(UserStatus_M(page, many=True).data)
-
-        return Response(status=status.HTTP_400_BAD_REQUEST, data="pagination fault")
-
-
-class UserCircleUpdateSet(viewsets.GenericViewSet):
-    serializer_class = CircleSerializer
-    permission_classes = (permissions.AllowAny,)  # 테스트용 임시
-    no_authority_error = ExceptionResponse(
-        status=status.HTTP_400_BAD_REQUEST,
-        detail="권한이 부족합니다",
-        code=ErrorCode.NOT_ALLOWED,
-    ).to_response()
-
-    # GET /circle/{id}/account/{id}/
-    def list(self, request, circle_id, user_id):
-
-        error, circle = find_circle(circle_id)
-        if error:
-            return error
-
-        error, user = find_user(user_id, request.user)
-        if error:
-            return error
-
-        return Response(status=status.HTTP_200_OK, data=user_status(circle, user))
-
-    # PUT /circle/{id}/account/{id}/{name}/
-    def update(self, request, circle_id, user_id, pk):
-
-        error, circle = find_circle(circle_id)
-        if error:
-            return error
-
-        error, user = find_user(user_id, request.user)
-        if error:
-            return error
-
-        my = request.user
-        my_membership = user_membership(circle, request.user)
-
-        if pk == "alarm":
-            # 내 계정의 알림만 변경 가능
-            if user == my:
-                UserCircle_Alarm.objects.get_or_create(user=user, circle=circle)
-            else:
-                return self.no_authority_error
-
-        if pk == "member":
-            # 'make_new_member' 권한 이상의 유저는 member 권한 부여 가능
-            if my_membership[1] >= circle.make_new_member:
-                UserCircle_Member.objects.get_or_create(user=user, circle=circle)
-            else:
-                return self.no_authority_error
-
-        if pk == "manager":
-            # 관리자는 manager 권한 부여 가능
-            if my_membership[0] == "관리자":
-                user_circle_member = UserCircle_Member.objects.get_or_create(
-                    user=user, circle=circle
-                )[0]
-                user_circle_member.is_manager = True
-                user_circle_member.save()
-            else:
-                return self.no_authority_error
-
-        return Response(status=status.HTTP_200_OK, data=user_status(circle, user))
-
-    # DELETE /circle/{id}/account/{id}/{name}/
-    def delete(self, request, circle_id, user_id, pk):
-
-        error, circle = find_circle(circle_id)
-        if error:
-            return error
-
-        error, user = find_user(user_id, request.user)
-        if error:
-            return error
-
-        my = request.user
-        my_membership = user_membership(circle, request.user)
-
-        if pk == "alarm":
-            # 내 계정의 알람만 변경 가능
-            if user == my:
-                if user_circle_alarm := UserCircle_Alarm.objects.get_or_none(
-                    user=user, circle=circle
-                ):
-                    user_circle_alarm.delete()
-            else:
-                return self.no_authority_error
-
-        if pk == "member":
-            # 내 계정 혹은 관리자 계정이 member 권한 삭제 가능
-            if my == user or my_membership[0] == "관리자":
-
-                if user_circle_member := UserCircle_Member.objects.get_or_none(
-                    user=user, circle=circle
-                ):
-                    user_circle_member.delete()
-            else:
-                return self.no_authority_error
-
-        if pk == "manager":
-            # 내 계정 혹은 관리자 계정이 manager 권한 삭제 가능
-            if my == user or my_membership[0] == "관리자":
-                if user_circle_member := UserCircle_Member.objects.get_or_none(
-                    user=user, circle=circle
-                ):
-                    user_circle_member.is_manager = False
-                    user_circle_member.save()
-            else:
-                return self.no_authority_error
-
-        return Response(status=status.HTTP_200_OK, data=user_status(circle, user))
-
 
 class IntroViewSet(viewsets.ViewSet):
     serializer_class = CircleSerializer

@@ -9,6 +9,7 @@ from recruitment.models import Recruitment, RecruitmentSchedule
 from schedule.models import Schedule
 import datetime
 import math
+from user.serializers import UserViewSerializer
 
 def d_day_calculator_circle_sort(circle):
     recruitment = Recruitment.objects.get_or_none(circle=circle)
@@ -146,25 +147,3 @@ def find_user(user_id, my):
 
     return None, user
 
-def user_membership(circle, user):
-
-    if isinstance(user, AnonymousUser):
-        return "Anonymous", Circle.MakeNewMember.일반
-
-    membership = ("일반", Circle.MakeNewMember.일반)
-    user_circle_member = UserCircle_Member.objects.get_or_none(user=user, circle=circle)
-
-    if user_circle_member:
-        membership = ("회원", Circle.MakeNewMember.회원)
-        if user_circle_member.is_manager:
-            membership = ("관리자", Circle.MakeNewMember.관리자)
-
-    return membership
-
-def user_status(circle, user):
-    data = dict()
-    data["user_id"] = user.id
-    data["membership"], data["membership_code"] = user_membership(circle, user)
-    data["alarm"] = bool(UserCircle_Alarm.objects.get_or_none(user=user, circle=circle))
-
-    return data

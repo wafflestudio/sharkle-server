@@ -3,25 +3,28 @@ from user.models import User
 
 from .models import *
 from hashtag.models import Hashtag, HashtagCircle
-from .functions import user_membership, update_hashtag, d_day_calculator
+from user_circle.views import UserBoardAlarmViewSet
+from .functions import update_hashtag, d_day_calculator
 from rest_framework.validators import UniqueTogetherValidator
 from recruitment.models import Recruitment
 from schedule.serializers import ScheduleViewSerializer
+from user.serializers import UserViewSerializer
 
 
 class HomepageSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=False)
-    homepage = serializers.CharField(max_length=500, allow_null=True, required=False)
-    facebook = serializers.CharField(max_length=500, allow_null=True, required=False)
-    instagram = serializers.CharField(max_length=500, allow_null=True, required=False)
-    twitter = serializers.CharField(max_length=500, allow_null=True, required=False)
-    youtube = serializers.CharField(max_length=500, allow_null=True, required=False)
-    tiktok = serializers.CharField(max_length=500, allow_null=True, required=False)
-    band = serializers.CharField(max_length=500, allow_null=True, required=False)
-
     class Meta:
         model = Homepage
-        fields = [
+        fields = "__all__"
+        extra_kwargs = {
+            "homepage": {"required": False, "allow_null": True},
+            "facebook": {"required": False, "allow_null": True},
+            "instagram":  {"required": False, "allow_null": True},
+            "twitter":  {"required": False, "allow_null": True},
+            "youtube":  {"required": False, "allow_null": True},
+            "tiktok":  {"required": False, "allow_null": True},
+            "band": {"required": False, "allow_null": True},
+        }
+        custom_fields = [
             "id",
             "homepage",
             "facebook",
@@ -31,53 +34,14 @@ class HomepageSerializer(serializers.ModelSerializer):
             "tiktok",
             "band",
         ]
-        # extra_fields = ['problems']
 
 
-class UserStatus_M(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    alarm = serializers.SerializerMethodField()
-    membership = serializers.SerializerMethodField()
-    membership_code = serializers.SerializerMethodField()
 
-    class Meta:
-        model = UserCircle_Member
-        fields = ["id", "alarm", "membership", "membership_code"]
-
-    def get_id(self, obj):
-        return obj.user.id
-
-    def get_alarm(self, obj):
-        return bool(
-            UserCircle_Alarm.objects.get_or_none(user=obj.user, circle=obj.circle)
-        )
-
-    def get_membership(self, obj):
-        return user_membership(obj.circle, obj.user)[0]
-
-    def get_membership_code(self, obj):
-        return user_membership(obj.circle, obj.user)[1]
-
-
-class UserStatus_A(UserStatus_M):
-    class Meta:
-        model = UserCircle_Alarm
-        fields = ["id", "alarm", "membership", "membership_code"]
 
 
 class CircleViewSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    type0 = serializers.ChoiceField(choices=Circle.CircleType0.choices)
-    type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices)
-    name = serializers.CharField()
-    bio = serializers.CharField()
-
     homepage = serializers.SerializerMethodField()
-
-    introduction = serializers.CharField()
-    tag = serializers.CharField()
     tag_integer = serializers.SerializerMethodField()
-
     d_day = serializers.SerializerMethodField()
     d_day_detail = serializers.SerializerMethodField()
 
@@ -150,7 +114,8 @@ class CircleSerializer(serializers.ModelSerializer):
             "bio",
             "introduction",
             "tag",
-        ] + HomepageSerializer.Meta.fields
+        ] + HomepageSerializer.Meta.custom_fields
+
         validators = [
             UniqueTogetherValidator(queryset=Circle.objects.all(), fields=["name"])
         ]
@@ -161,7 +126,7 @@ class CircleSerializer(serializers.ModelSerializer):
         serializer.is_valid(raise_exception=True)
         homepage = serializer.save()
 
-        for i in HomepageSerializer.Meta.fields:
+        for i in HomepageSerializer.Meta.custom_fields:
             if i in validated_data:
                 validated_data.pop(i)
 
@@ -181,7 +146,7 @@ class CircleUpdateSerializer(CircleSerializer):
 
     def update(self, instance, validated_data):
         data = {}
-        for i in HomepageSerializer.Meta.fields:
+        for i in HomepageSerializer.Meta.custom_fields:
             if i in validated_data:
                 data[i] = validated_data.pop(i)
 

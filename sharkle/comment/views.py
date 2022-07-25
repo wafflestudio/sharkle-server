@@ -3,7 +3,7 @@ from rest_framework import viewsets, permissions, status
 from comment.models import Comment
 from comment.serializers import CommentSerializer, CommentCreateSerializer
 from rest_framework.response import Response
-from circle.permission import UserCirclePermission
+from user_circle.permission import UserCirclePermission
 from common.exception_response import ExceptionResponse, ErrorCode
 
 # Create your views here.

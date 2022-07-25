@@ -47,33 +47,7 @@ class Circle(BaseModel):
     introduction = models.CharField(max_length=5000, null=True, blank=True)
     tag = models.CharField(max_length=500, null=False, blank=True)
 
-    class MakeNewMember(models.IntegerChoices):
-        일반 = 0, "일반"  # 비회원 이상의 유저 초대 권한 가짐
-        회원 = 1, "회원"  # 회원 이상의 유저 초대 권한 가짐
-        관리자 = 2, "관리자"  # 관리자 이상의 유저 초대 권한 가짐
-
-    make_new_member = models.PositiveSmallIntegerField(
-        choices=MakeNewMember.choices, default=MakeNewMember.회원
-    )
-
     def __str__(self):
         return self.name
 
 
-class UserCircle_Member(BaseModel):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="membership", null=True
-    )
-    circle = models.ForeignKey(
-        Circle, on_delete=models.CASCADE, related_name="membership", null=True
-    )
-    is_manager = models.BooleanField(default=False)
-
-
-class UserCircle_Alarm(BaseModel):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="subscribe", null=True
-    )
-    circle = models.ForeignKey(
-        Circle, on_delete=models.CASCADE, related_name="subscribe", null=True
-    )

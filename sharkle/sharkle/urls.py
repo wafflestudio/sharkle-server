@@ -27,7 +27,7 @@ urlpatterns = [
     path("api/v1/", include("comment.urls")),
     path('api/v1/', include('recruitment.urls')),
     path('api/v1/', include('schedule.urls')),
-
+    path('api/v1/', include('user_circle.urls'))
 
 
 ]

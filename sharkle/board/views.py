@@ -8,7 +8,7 @@ from board.models import Board
 from board.serializers import *
 
 from circle.models import Circle
-from circle.permission import UserCirclePermission
+from user_circle.permission import UserCirclePermission
 
 # 1. check circle_id existence
 # 2. if needed, circle member validate (create, update, destroy)

@@ -6,7 +6,8 @@ from django.test import TestCase
 from factory.django import DjangoModelFactory
 from rest_framework_simplejwt.tokens import RefreshToken
 from board.models import Board
-from circle.models import Circle, UserCircle_Member
+from circle.models import Circle
+from user_circle.models import UserCircleMember, Membership
 from article.models import Article
 from comment.models import Comment
 from user.models import User
@@ -33,7 +34,7 @@ class CircleFactory(DjangoModelFactory):
 
 class MemberFactory(DjangoModelFactory):
     class Meta:
-        model = UserCircle_Member
+        model = UserCircleMember
 
     user = factory.SubFactory(UserFactory)
     circle = factory.SubFactory(CircleFactory)
@@ -171,7 +172,7 @@ class GetCommentTestCase(TestCase):
 class UpdateCommentTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.member = MemberFactory(is_manager=True)
+        cls.member = MemberFactory(membership=Membership.관리자)
         cls.circle = cls.member.circle
         cls.board = BoardFactory(circle=cls.circle)
         cls.manager = cls.member.user  # manager of circle
@@ -246,7 +247,7 @@ class UpdateCommentTestCase(TestCase):
 class DeleteCommentTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.member = MemberFactory(is_manager=True)
+        cls.member = MemberFactory(membership=Membership.관리자)
         cls.circle = cls.member.circle
         cls.board = BoardFactory(circle=cls.circle)
         cls.manager = cls.member.user  # manager of circle

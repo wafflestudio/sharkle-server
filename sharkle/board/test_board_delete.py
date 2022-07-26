@@ -13,7 +13,7 @@ from board.board_test_factory import (
     BoardFactory,
 )
 from board.models import Board
-from circle.models import Circle, UserCircle_Member
+from user_circle.models import UserCircleMember, Membership
 from rest_framework import status
 
 
@@ -26,11 +26,11 @@ class BoardDeleteTestCase(TestCase):
 
         cls.circle = CircleFactory()
 
-        UserCircle_Member.objects.create(
-            circle_id=cls.circle.id, user_id=cls.user1.id, is_manager=True
+        UserCircleMember.objects.create(
+            circle=cls.circle, user=cls.user1, membership=Membership.관리자
         )
-        UserCircle_Member.objects.create(
-            circle_id=cls.circle.id, user_id=cls.user2.id, is_manager=False
+        UserCircleMember.objects.create(
+            circle=cls.circle, user=cls.user2,  membership=Membership.회원
         )
 
         cls.user1_token = "Bearer " + str(RefreshToken.for_user(cls.user1).access_token)

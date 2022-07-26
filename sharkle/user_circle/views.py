@@ -82,8 +82,8 @@ class UserBoardAlarmViewSet(viewsets.GenericViewSet):
     def get_alarm_dict(cls, circle, user):
         data = dict()
         data["alarm"] = user_status(circle, user)["alarm"]
-        data["live_recruitment_alarm"] = cls.get_recruitment_alarm(circle, user)
         if data["alarm"]:
+            data["live_recruitment_alarm"] = cls.get_recruitment_alarm(circle, user)
             board_alarm = cls.get_board_alarm_list(circle, user)
             data["board_alarm"] = board_alarm
             data["board_alarm_count"] = len(board_alarm)

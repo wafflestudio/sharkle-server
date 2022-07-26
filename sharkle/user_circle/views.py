@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions, status
 
-from .models import UserBoardAlarm, UserRecruitmentAlarm
+from .models import UserBoardAlarm
 from rest_framework.response import Response
 
 from circle.functions import find_user, find_circle
@@ -57,7 +57,7 @@ class UserCircleViewSet(viewsets.GenericViewSet):
 class UserBoardAlarmViewSet(viewsets.GenericViewSet):
     queryset = UserBoardAlarm.objects.all()  # .... not appropriate?
     serializer_class = UserBoardAlarmSerializer
-    permission_classes = (permissions.AllowAny,)  
+    permission_classes = (permissions.AllowAny,)
 
     @classmethod
     def get_board_alarm_list(cls, circle, user):
@@ -74,35 +74,25 @@ class UserBoardAlarmViewSet(viewsets.GenericViewSet):
         return board_alarm
 
     @classmethod
-    def get_recruitment_alarm_list(cls, circle, user):
-        recruitments = Recruitment.objects.filter(circle=circle)
-
-        function = (lambda recruitment:
-                    {"recruitment_info": RecruitmentViewSerializer(recruitment).data,
-                     "recruitment_alarm": bool(UserRecruitmentAlarm.objects.get_or_none
-                                               (user=user, recruitment=recruitment))})
-
-        recruitment_alarm = [function(recruitment) for recruitment in recruitments]
-        return recruitment_alarm
+    def get_recruitment_alarm(cls, circle, user):
+        user_circle_alarm = UserCircleAlarm.objects.get_or_none(circle=circle, user=user)
+        return (user_circle_alarm is not None) and user_circle_alarm.live_recruitment_alarm
 
     @classmethod
     def get_alarm_dict(cls, circle, user):
-        data = {"alarm": user_status(circle, user)["alarm"]}
+        data = dict()
+        data["alarm"] = user_status(circle, user)["alarm"]
+        data["live_recruitment_alarm"] = cls.get_recruitment_alarm(circle, user)
         if data["alarm"]:
             board_alarm = cls.get_board_alarm_list(circle, user)
             data["board_alarm"] = board_alarm
             data["board_alarm_count"] = len(board_alarm)
-
-            recruitment_alarm = cls.get_recruitment_alarm_list(circle, user)
-            data["recruitment_alarm"] = recruitment_alarm
-            data["recruitment_alarm_count"] = len(recruitment_alarm)
         return data
 
     @classmethod
     def get_membership_dict(cls, circle, user):
         data = user_status(circle, user)
         return {"membership": data["membership"], "membership_code": data["membership_code"]}
-
 
     @classmethod
     def update_alarm(cls, circle, user, data):
@@ -111,7 +101,6 @@ class UserBoardAlarmViewSet(viewsets.GenericViewSet):
                 UserCircleAlarm.objects.get_or_create(user=user, circle=circle)
             else:
                 UserBoardAlarm.objects.filter(user=user, board__circle=circle).delete()
-                UserRecruitmentAlarm.objects.filter(user=user, recruitment__circle=circle).delete()
                 if user_circle_alarm := UserCircleAlarm.objects.get_or_none(
                         user=user, circle=circle
                 ):
@@ -121,6 +110,11 @@ class UserBoardAlarmViewSet(viewsets.GenericViewSet):
 
         if not alarm_on:
             return
+
+        if "live_recruitment_alarm" in data:
+            user_circle_alarm = UserCircleAlarm.objects.get_or_none(user=user, circle=circle)
+            user_circle_alarm.live_recruitment_alarm = data["live_recruitment_alarm"]
+            user_circle_alarm.save()
 
         for key in data:
             if len(key) >= 9 and key[:9] == "board_id_":
@@ -139,25 +133,6 @@ class UserBoardAlarmViewSet(viewsets.GenericViewSet):
                 else:
                     if user_board_alarm := UserBoardAlarm.objects.get_or_none(user=user, board=board):
                         user_board_alarm.delete()
-
-        for key in data:
-            if len(key) >= 15 and key[:15] == "recruitment_id_":
-                value = data[key]
-
-                try:
-                    recruitment = Recruitment.objects.get(id=key[15:], circle=circle)
-                except Recruitment.DoesNotExist:
-                    continue
-                except ValueError:
-                    continue
-
-                if value:
-                    UserRecruitmentAlarm.objects.get_or_create(user=user, recruitment=recruitment)
-
-                else:
-                    if user_recruitment_alarm := \
-                            UserRecruitmentAlarm.objects.get_or_none(user=user, recruitment=recruitment):
-                        user_recruitment_alarm.delete()
 
     @classmethod
     def update_membership(cls, circle, user, data):

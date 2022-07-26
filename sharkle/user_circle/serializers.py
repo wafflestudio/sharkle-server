@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserBoardAlarm, UserRecruitmentAlarm
+from .models import UserBoardAlarm
 from board.serializers import BoardSerializer
 from .models import UserCircleAlarm
 from .functions import user_membership
@@ -51,20 +51,3 @@ class UserBoardAlarmSerializer(serializers.ModelSerializer):
     def get_board_info(self, obj):
         board = obj.board
         return BoardSerializer(board).data
-
-
-class UserRecruitmentAlarmSerializer(serializers.ModelSerializer):
-
-    recruitment_info = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserRecruitmentAlarm
-        fields = "__all__"
-        extra_kwargs = {
-            "recruitment": {"required": True, "allow_null": False},
-            "user": {"required": True, "allow_null": False},
-        }
-
-    def get_recruitment_info(self, obj):
-        recruitment = obj.recruitment
-        return RecruitmentViewSerializer(recruitment).data

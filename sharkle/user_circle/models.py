@@ -16,7 +16,6 @@ class Membership(models.IntegerChoices):
 
 class UserCircleMember(BaseModel):
     membership = models.PositiveSmallIntegerField(choices=Membership.choices, default=Membership.회원)
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="membership", null=True)
     circle = models.ForeignKey(Circle, on_delete=models.CASCADE, related_name="membership", null=True)
 
@@ -26,6 +25,7 @@ class UserCircleAlarm(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscribe", null=True)
     circle = models.ForeignKey(Circle, on_delete=models.CASCADE, related_name="subscribe", null=True)
 
+    live_recruitment_alarm = models.BooleanField(default=False)
 
 class UserBoardAlarm(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscribe_board", null=False)
@@ -36,18 +36,5 @@ class UserBoardAlarm(BaseModel):
             models.UniqueConstraint(
                 fields=("user", "board"),
                 name="Fields Set of UserBoardAlarm Should be Unique!"
-            )
-        ]
-
-class UserRecruitmentAlarm(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscribe_recruitment", null=False)
-    recruitment = models.ForeignKey(Recruitment, on_delete=models.CASCADE, related_name="subscribe_recruitment", null=False)
-
-    class Meta:
-
-        constraints = [
-            models.UniqueConstraint(
-                fields=("user", "recruitment"),
-                name="Fields Set of UserRecruitmentAlarm Should be Unique!"
             )
         ]

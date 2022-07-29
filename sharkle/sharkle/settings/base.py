@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "article",
     "comment",
     "schedule",
+    "user_circle",
 ]
 
 MIDDLEWARE = [

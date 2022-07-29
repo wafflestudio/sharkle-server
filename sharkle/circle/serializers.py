@@ -3,7 +3,7 @@ from user.models import User
 
 from .models import *
 from hashtag.models import Hashtag, HashtagCircle
-from .functions import user_membership, update_hashtag, d_day_calculator
+from .functions import update_hashtag, d_day_calculator
 from rest_framework.validators import UniqueTogetherValidator
 from recruitment.models import Recruitment
 from schedule.serializers import ScheduleViewSerializer
@@ -32,37 +32,6 @@ class HomepageSerializer(serializers.ModelSerializer):
             "band",
         ]
         # extra_fields = ['problems']
-
-
-class UserStatus_M(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    alarm = serializers.SerializerMethodField()
-    membership = serializers.SerializerMethodField()
-    membership_code = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserCircle_Member
-        fields = ["id", "alarm", "membership", "membership_code"]
-
-    def get_id(self, obj):
-        return obj.user.id
-
-    def get_alarm(self, obj):
-        return bool(
-            UserCircle_Alarm.objects.get_or_none(user=obj.user, circle=obj.circle)
-        )
-
-    def get_membership(self, obj):
-        return user_membership(obj.circle, obj.user)[0]
-
-    def get_membership_code(self, obj):
-        return user_membership(obj.circle, obj.user)[1]
-
-
-class UserStatus_A(UserStatus_M):
-    class Meta:
-        model = UserCircle_Alarm
-        fields = ["id", "alarm", "membership", "membership_code"]
 
 
 class CircleViewSerializer(serializers.ModelSerializer):

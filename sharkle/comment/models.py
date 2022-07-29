@@ -17,3 +17,4 @@ class Comment(BaseModel):
         "self", on_delete=models.SET_NULL, related_name="replies", null=True
     )  # TODO SET_NULL?
     is_deleted = models.BooleanField(default=False)
+    depth = models.IntegerField(default=0)

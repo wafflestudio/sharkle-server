@@ -13,7 +13,7 @@ from board.board_test_factory import (
     BoardFactory,
 )
 from board.models import Board
-from circle.models import Circle, UserCircle_Member
+from user_circle.models import UserCircleMember, Membership
 from rest_framework import status
 
 
@@ -26,11 +26,11 @@ class BoardCreateTestCase(TestCase):
 
         cls.circle = CircleFactory()
 
-        UserCircle_Member.objects.create(
-            circle_id=cls.circle.id, user_id=cls.user1.id, is_manager=True
+        UserCircleMember.objects.create(
+            circle_id=cls.circle.id, user_id=cls.user1.id, membership=Membership.관리자
         )
-        UserCircle_Member.objects.create(
-            circle_id=cls.circle.id, user_id=cls.user2.id, is_manager=False
+        UserCircleMember.objects.create(
+            circle_id=cls.circle.id, user_id=cls.user2.id, membership=Membership.회원
         )
 
         cls.board_data = {"name": "QnA", "is_private": False}

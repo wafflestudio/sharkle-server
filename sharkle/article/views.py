@@ -4,6 +4,7 @@ from article.models import Article
 from article.serializers import ArticleSerializer, ArticleCreateSerializer
 from rest_framework.response import Response
 from common.exception_response import ExceptionResponse, ErrorCode
+from django.db.models import Q
 
 # Create your views here.
 
@@ -27,10 +28,27 @@ class ArticleViewSet(viewsets.GenericViewSet):
     # GET /circle/{id}/board/{id}/article/ TODO pagination
     def list(self, request, circle_id, board_id):
         articles = self.get_queryset().filter(board=board_id)
+
+        search = request.query_params.get('search', None)
+        if search is not None:
+            articles = self.get_queryset_search(search, self.get_queryset().filter(board=board_id))
+
         data = self.get_serializer(articles, many=True).data
         return Response(
             {"articles": data, "count": articles.count()}, status=status.HTTP_200_OK
         )
+
+    def get_queryset_search(self, search, queryset):
+        if search == "":
+            return queryset.none()
+        if search:
+            q = Q()
+            # return queryset.filter(q)
+            keywords = set(search.split(' '))
+            for k in keywords:
+                q &= Q(title__icontains=k) | Q(content__icontains=k)
+            queryset = queryset.filter(q)
+        return queryset.distinct()
 
     # GET /circle/{id}/board/{id}/article/{id}/
     def retrieve(self, request, circle_id, board_id, pk=None):

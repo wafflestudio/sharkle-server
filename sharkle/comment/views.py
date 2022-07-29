@@ -3,7 +3,7 @@ from rest_framework import viewsets, permissions, status
 from comment.models import Comment
 from comment.serializers import CommentSerializer, CommentCreateSerializer
 from rest_framework.response import Response
-from circle.permission import UserCirclePermission
+from user_circle.permission import UserCirclePermission
 from common.exception_response import ExceptionResponse, ErrorCode
 
 # Create your views here.
@@ -11,6 +11,38 @@ class CommentViewSet(viewsets.GenericViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticated,)  # TODO
+
+    def dfs_comment(self, article_id):
+        comments = self.get_queryset().filter(article=article_id)
+
+        parent_to_child = {}
+
+        for comment in comments:
+            parent_to_child[comment] = []
+
+        for child in comments:
+            parent = child.reply_to
+            if parent:
+                parent_to_child[parent].append(child)
+
+        sequence = []
+
+        for comment in self.get_queryset().filter(article=article_id, reply_to=None):
+            stack_comment = [comment]
+            stack_depth = [0]
+
+            while len(stack_depth):
+                comment_ = stack_comment.pop()
+                depth_ = stack_depth.pop()
+
+                comment_.depth = depth_
+
+                sequence.append(comment_)
+
+                stack_comment = stack_comment + parent_to_child[comment_][-1::-1]
+                stack_depth = stack_depth + [depth_ + 1] * len(parent_to_child[comment_])
+
+        return sequence
 
     # POST article/{id}/comment/?reply_to=~~  TODO nested
     def create(self, request, article_id):
@@ -28,7 +60,7 @@ class CommentViewSet(viewsets.GenericViewSet):
 
     # GET article/{id}/comment/ TODO nested ??
     def list(self, request, article_id):
-        comments = self.get_queryset().filter(article=article_id)
+        comments = self.dfs_comment(article_id)
         return Response(self.get_serializer(comments, many=True).data)
 
     # GET article/{id}/comment/{id}/

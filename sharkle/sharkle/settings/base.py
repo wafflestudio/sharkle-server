@@ -40,15 +40,13 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "user",
-    'recruitment',
+    "recruitment",
     "board",
     "hashtag",
     "circle",
     "article",
     "comment",
     "schedule",
-
-
 ]
 
 MIDDLEWARE = [
@@ -172,5 +170,10 @@ AUTH_USER_MODEL = "user.User"
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = os.environ.get("AWS_DEFAULT_REGION")
+
+AWS_CLOUDWATCH_LOG_ACCESS_KEY_ID = os.environ.get("AWS_CLOUDWATCH_LOG_ACCESS_KEY_ID")
+AWS_CLOUDWATCH_LOG_SECRET_ACCESS_KEY = os.environ.get(
+    "AWS_CLOUDWATCH_LOG_SECRET_ACCESS_KEY"
+)
 
 SITE_ID = 1  # example.com ...

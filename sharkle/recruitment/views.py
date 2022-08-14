@@ -1,12 +1,17 @@
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import *
 from rest_framework.response import Response
 
 from common.exception_response import ExceptionResponse, ErrorCode
 from .serilaizers_schedule import *
 from .serializers_recruitment import *
 from circle.functions import *
+from circle.models import Circle
 
 # Create your views here.
+
+
 class RecruitmentViewSet(viewsets.GenericViewSet):
     serializer_class = RecruitmentSerializer
     permission_classes = (permissions.AllowAny,)  # 테스트용 임시
@@ -61,7 +66,7 @@ class RecruitmentViewSet(viewsets.GenericViewSet):
             return ExceptionResponse(
                 status=status.HTTP_409_CONFLICT,
                 detail="동아리에 Recruitment가 이미 존재합니다.",
-                code=ErrorCode.CONFLICT
+                code=ErrorCode.CONFLICT,
             ).to_response()
 
         data = request.data.copy()
@@ -183,7 +188,9 @@ class RecruitmentScheduleViewSet(viewsets.GenericViewSet):
         if error:
             return error
 
-        serializer = RecruitScheduleUpdateSerializer(recruitment_schedule, data=request.data)
+        serializer = RecruitScheduleUpdateSerializer(
+            recruitment_schedule, data=request.data
+        )
         serializer.is_valid(raise_exception=True)
         serializer.update(recruitment_schedule, serializer.validated_data)
 
@@ -212,3 +219,17 @@ class RecruitmentScheduleViewSet(viewsets.GenericViewSet):
         return Response(
             status=status.HTTP_200_OK, data={"detail": "deleted successfully"}
         )
+
+
+@api_view(("GET",))
+@permission_classes((AllowAny,))
+def get_recruitment_list_by_circle_name(request, circle_name):
+    if not Circle.objects.filter(name=circle_name).exists():
+        return ExceptionResponse(
+            status=status.HTTP_404_NOT_FOUND,
+            detail="name: " + circle_name + "에 해당하는 동아리가 존재하지 않습니다.",
+            code=ErrorCode.CIRCLE_NOT_FOUND,
+        ).to_response()
+    circle = Circle.objects.get(name=circle_name)
+    recruitment = Recruitment.objects.filter(circle=circle.id)
+    return Response(RecruitmentSerializer(recruitment, many=True).data)

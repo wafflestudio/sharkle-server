@@ -10,7 +10,8 @@ from common.exception_response import ExceptionResponse, ErrorCode
 class CommentViewSet(viewsets.GenericViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = (permissions.IsAuthenticated,)  # TODO
+    #permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,) # TODO
 
     def dfs_comment(self, article_id):
         comments = self.get_queryset().filter(article=article_id)

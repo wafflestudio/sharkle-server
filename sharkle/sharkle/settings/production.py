@@ -1,3 +1,8 @@
+import logging
+
+import boto3
+import watchtower
+
 from sharkle.settings.base import *
 
 DEBUG = False
@@ -20,6 +25,12 @@ DATABASES = {
 }
 
 # CUSTOM LOGGING
+boto3_logs_client = boto3.client(
+    "logs",
+    aws_access_key_id=AWS_CLOUDWATCH_LOG_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_CLOUDWATCH_LOG_SECRET_ACCESS_KEY,
+    region_name=AWS_DEFAULT_REGION,
+)
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -67,10 +78,19 @@ LOGGING = {
             "maxBytes": 1024 * 1024 * 5,  # TODO 5 MB
             "backupCount": 5,
         },
+        # added for aws cloudwatch logging
+        "watchtower": {
+            "level": "DEBUG",
+            "filters": ["require_debug_false"],
+            "class": "watchtower.CloudWatchLogHandler",
+            "boto3_client": boto3_logs_client,
+            "log_group_name": "sharkle_django_log",
+            "stream_name": "debug",
+        },
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "mail_admins", "file"],
+            "handlers": ["console", "mail_admins", "file", "watchtower"],
             # 'level': 'INFO',
         },
         "django.server": {

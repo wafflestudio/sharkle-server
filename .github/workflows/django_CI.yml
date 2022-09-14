@@ -41,4 +41,11 @@ jobs:
           DB_USER: 'root'
           DB_PASSWORD: 'password'
           DB_HOST: '127.0.0.1'
+          
+          AWS_S3_ACCESS_KEY_ID: 'Wow'
+          AWS_S3_SECRET_ACCESS_KEY: 'Very Good'
+          AWS_STORAGE_BUCKET_NAME: 'and this'
+          AWS_S3_SIGNATURE_VERSION: 'contains'
+          AWS_S3_REGION_NAME: 'seoul'
+          DEFAULT_FILE_STORAGE: 'national university'
       working-directory: ./sharkle

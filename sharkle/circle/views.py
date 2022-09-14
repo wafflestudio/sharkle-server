@@ -85,6 +85,7 @@ class CircleViewSet(viewsets.GenericViewSet):
         if error:
             return error
 
+        circle.profile.delete(save=False)
         circle.delete()
 
         return Response(

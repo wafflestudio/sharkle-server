@@ -18,26 +18,25 @@ from .serializers import (
 from .models import User
 from common.exception_response import ExceptionResponse, ErrorCode
 from django.contrib.auth.models import AnonymousUser
-
+from .serializers import UserUpdateSerializer
 
 class UserViewSet(viewsets.GenericViewSet):
     # permission_classes = (permissions.IsAuthenticated,)  # 테스트용 임시
     permission_classes = (permissions.AllowAny,)
+    serializer_class = UserViewSerializer
+
+    def get_queryset(self):
+        return User.objects.all()
 
     # GET /account/
     def list(self, request):
 
         query_params = request.query_params
-
         queryset = User.objects.all()
 
         if "username" in query_params:
             username = query_params.get("username")
             queryset = queryset.filter(username__icontains=username)
-
-        if "user_id" in query_params:
-            user_id = query_params.get("user_id")
-            queryset = queryset.filter(user_id__icontains=user_id)
 
         if "email" in query_params:
             email = query_params.get("email")
@@ -66,10 +65,10 @@ class UserViewSet(viewsets.GenericViewSet):
 
         elif pk == "find":
             query_params = request.query_params
-            if "user_id" in query_params:
-                user_id = query_params.get("user_id")
+            if "username" in query_params:
+                username = query_params.get("username")
                 try:
-                    user = User.objects.get(user_id=user_id)
+                    user = User.objects.get(username=username)
                 except Exception as e:
                     user = None
             if "email" in query_params:
@@ -81,7 +80,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
         else:
             try:
-                user = User.objects.get(id=id)
+                user = User.objects.get(id=pk)
             except Exception as e:
                 user = None
 
@@ -100,6 +99,56 @@ class UserViewSet(viewsets.GenericViewSet):
             ).to_response()
 
         return Response(data=UserViewSerializer(user).data, status=status.HTTP_200_OK)
+
+    # PUT /account/{id}/
+    def put(self, request, pk):
+        user = None
+
+        if pk == "my":
+            user = request.user
+
+        elif pk == "find":
+            query_params = request.query_params
+            if "username" in query_params:
+                username = query_params.get("username")
+                try:
+                    user = User.objects.get(username=username)
+                except Exception as e:
+                    user = None
+            if "email" in query_params:
+                email = query_params.get("email")
+                try:
+                    user = User.objects.get(email=email)
+                except Exception as e:
+                    user = None
+
+        else:
+            try:
+                user = User.objects.get(id=pk)
+            except Exception as e:
+                user = None
+
+        if not user:
+            return ExceptionResponse(
+                status=status.HTTP_404_NOT_FOUND,
+                detail="주어진 요청에 해당하는 유저가 존재하지 않습니다.",
+                code=ErrorCode.USER_NOT_FOUND,
+            ).to_response()
+
+        if isinstance(user, AnonymousUser):
+            return ExceptionResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                detail="로그인하지 않은 상태입니다. ",
+                code=ErrorCode.ANONYMOUS_USER,
+            ).to_response()
+
+        serializer = UserUpdateSerializer(user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.update(user, serializer.validated_data)
+
+        return Response(
+            status=status.HTTP_200_OK, data=UserViewSerializer(user).data
+        )
 
 
 class PingPongView(APIView):

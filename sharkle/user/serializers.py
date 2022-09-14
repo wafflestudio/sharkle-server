@@ -7,22 +7,41 @@ from rest_framework_simplejwt.serializers import (
 )
 from user.models import User
 
+class UserUpdateSerializer(serializers.ModelSerializer):
+
+    profile = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = User
+        fields = ['profile']
+        # extra_fields = ['problems']
+
+    def update(self, instance, validated_data):
+
+        # delete profile from s3
+        if 'profile' in validated_data:
+            instance.profile.delete(save=False)
+
+        return super().update(instance, validated_data)
+
 
 class UserViewSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(required=False)
     username = serializers.CharField()
     email = serializers.CharField()
+    profile = serializers.ImageField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "email"]
+        fields = ["id", "username", "email", "profile"]
 
 
 class UserSignUpSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
+    profile = serializers.ImageField(required=False)
 
     def validate_email(self, email):
         if User.objects.filter(email=email).exists():
@@ -33,9 +52,13 @@ class UserSignUpSerializer(serializers.Serializer):
         username = validated_data.get("username")
         email = validated_data.get("email")
         password = validated_data.get("password")
-        user = User.objects.create_user(
-            username=username, email=email, password=password
-        )
+
+        if 'profile' in validated_data:
+            profile = validated_data.get('profile')
+            user = User.objects.create_user(username=username, email=email, password=password, profile=profile)
+
+        else:
+            user = User.objects.create_user(username=username, email=email, password=password)
 
         return user
 

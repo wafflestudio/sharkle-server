@@ -168,9 +168,7 @@ class CircleUpdateSerializer(CircleSerializer):
 
         # delete profile from s3
         if 'profile' in validated_data:
-            profile = validated_data.get("profile")
-            if profile is None:
-                instance.profile.delete(save=False)
+            instance.profile.delete(save=False)
 
         # tag update
         if "tag" in validated_data:

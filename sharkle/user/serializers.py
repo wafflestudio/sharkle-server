@@ -20,9 +20,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # delete profile from s3
         if 'profile' in validated_data:
-            profile = validated_data.get("profile")
-            if profile is None:
-                instance.profile.delete(save=False)
+            instance.profile.delete(save=False)
 
         return super().update(instance, validated_data)
 

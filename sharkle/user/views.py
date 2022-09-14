@@ -109,10 +109,10 @@ class UserViewSet(viewsets.GenericViewSet):
 
         elif pk == "find":
             query_params = request.query_params
-            if "user_id" in query_params:
-                user_id = query_params.get("user_id")
+            if "username" in query_params:
+                username = query_params.get("username")
                 try:
-                    user = User.objects.get(user_id=user_id)
+                    user = User.objects.get(username=username)
                 except Exception as e:
                     user = None
             if "email" in query_params:
@@ -124,7 +124,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
         else:
             try:
-                user = User.objects.get(id=id)
+                user = User.objects.get(id=pk)
             except Exception as e:
                 user = None
 

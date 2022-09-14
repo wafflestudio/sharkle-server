@@ -13,6 +13,19 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    author_username = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
-        fields = "__all__"
+        fields = [
+            "id",
+            "article",
+            "author_username",
+            "content",
+            "created_at",
+            "reply_to",
+            "is_deleted",
+        ]
+
+    def get_author_username(self, obj):
+        return obj.author.username

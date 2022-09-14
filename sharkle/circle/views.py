@@ -48,7 +48,7 @@ class CircleViewSet(viewsets.GenericViewSet):
 
         qna_board = Board(circle=circle, name="QnA", is_private=False)
         qna_board.save()
-        comm_board = Board(circle=circle, name="Community", is_private=True)
+        comm_board = Board(circle=circle, name="Community", is_private=False)
         comm_board.save()
 
         return Response(

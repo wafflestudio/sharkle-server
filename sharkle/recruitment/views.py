@@ -87,7 +87,7 @@ class RecruitmentViewSet(viewsets.GenericViewSet):
         if error:
             return error
 
-        serializer = RecruitmentUpdateSerializer(recruitment, data=request.data)
+        serializer = RecruitmentUpdateSerializer(recruitment, data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.update(recruitment, serializer.validated_data)
 

@@ -41,6 +41,8 @@ class CircleViewSerializer(serializers.ModelSerializer):
     name = serializers.CharField()
     bio = serializers.CharField()
 
+    profile = serializers.ImageField()
+
     homepage = serializers.SerializerMethodField()
 
     introduction = serializers.CharField()
@@ -64,6 +66,7 @@ class CircleViewSerializer(serializers.ModelSerializer):
             "homepage",
             "d_day",
             "d_day_detail",
+            "profile",
         ]
         # extra_fields = ['problems']
 
@@ -106,6 +109,8 @@ class CircleSerializer(serializers.ModelSerializer):
     tiktok = serializers.CharField(max_length=500, allow_null=True, required=False)
     band = serializers.CharField(max_length=500, allow_null=True, required=False)
 
+    profile = serializers.ImageField(required=False, allow_null=True)
+
     bio = serializers.CharField(max_length=300, allow_blank=True, required=False)
     introduction = serializers.CharField(max_length=5000, allow_null=True, allow_blank=True, required=False)
     tag = serializers.CharField(max_length=500, allow_blank=True, required=False)
@@ -119,6 +124,7 @@ class CircleSerializer(serializers.ModelSerializer):
             "bio",
             "introduction",
             "tag",
+            "profile",
         ] + HomepageSerializer.Meta.fields
         validators = [
             UniqueTogetherValidator(queryset=Circle.objects.all(), fields=["name"])
@@ -148,6 +154,8 @@ class CircleUpdateSerializer(CircleSerializer):
     type1 = serializers.ChoiceField(choices=Circle.CircleType1.choices, required=False)
     name = serializers.CharField(max_length=100, required=False)
 
+    profile = serializers.ImageField(required=False, allow_null=True)
+
     def update(self, instance, validated_data):
         data = {}
         for i in HomepageSerializer.Meta.fields:
@@ -157,6 +165,12 @@ class CircleUpdateSerializer(CircleSerializer):
         serializer = HomepageSerializer(instance.homepage, data=data)
         serializer.is_valid(raise_exception=True)
         serializer.update(instance.homepage, serializer.validated_data)
+
+        # delete profile from s3
+        if 'profile' in validated_data:
+            profile = validated_data.get("profile")
+            if profile is None:
+                instance.profile.delete(save=False)
 
         # tag update
         if "tag" in validated_data:

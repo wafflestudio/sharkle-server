@@ -1,6 +1,8 @@
 from django.db import models
 from user.models import User
 
+from sharkle.upload_image import upload_image
+
 # Create your models here.
 from common.models import BaseModel
 
@@ -16,6 +18,9 @@ class Homepage(BaseModel):
 
 
 class Circle(BaseModel):
+
+    profile = models.ImageField(upload_to=upload_image, editable=True, null=True)
+
     class CircleType0(models.IntegerChoices):
         기타 = 0, "기타"
         연합 = 1, "연합"

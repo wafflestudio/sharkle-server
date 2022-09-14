@@ -23,21 +23,20 @@ from .serializers import UserUpdateSerializer
 class UserViewSet(viewsets.GenericViewSet):
     # permission_classes = (permissions.IsAuthenticated,)  # 테스트용 임시
     permission_classes = (permissions.AllowAny,)
+    serializer_class = UserViewSerializer
+
+    def get_queryset(self):
+        return User.objects.all()
 
     # GET /account/
     def list(self, request):
 
         query_params = request.query_params
-
         queryset = User.objects.all()
 
         if "username" in query_params:
             username = query_params.get("username")
             queryset = queryset.filter(username__icontains=username)
-
-        if "user_id" in query_params:
-            user_id = query_params.get("user_id")
-            queryset = queryset.filter(user_id__icontains=user_id)
 
         if "email" in query_params:
             email = query_params.get("email")
@@ -66,10 +65,10 @@ class UserViewSet(viewsets.GenericViewSet):
 
         elif pk == "find":
             query_params = request.query_params
-            if "user_id" in query_params:
-                user_id = query_params.get("user_id")
+            if "username" in query_params:
+                username = query_params.get("username")
                 try:
-                    user = User.objects.get(user_id=user_id)
+                    user = User.objects.get(username=username)
                 except Exception as e:
                     user = None
             if "email" in query_params:
@@ -81,7 +80,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
         else:
             try:
-                user = User.objects.get(id=id)
+                user = User.objects.get(id=pk)
             except Exception as e:
                 user = None
 
